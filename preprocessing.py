@@ -30,7 +30,7 @@ def create_train_data():
 
     index_list = [i for i in range(len(train_x))]
     np.random.shuffle(index_list)
-    x_train = [train_x[i] for i in range(len(train_x))]
-    y_train = [train_y[i] for i in range(len(train_y))]
+    x_train = [train_x[i] for i in index_list]
+    y_train = [train_y[i] for i in index_list]
 
-    
+
