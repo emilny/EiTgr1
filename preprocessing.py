@@ -16,7 +16,8 @@ cats_to_onehots = {"COVID19": [1, 0, 0],
 
 IMG_SIZE = 100
 
-def create_dataset(data_dir, percentage_of_data_set):
+def create_dataset(percentage_of_data_set, training=True):
+    data_dir = TRAINING_DATA_DIR if training else TEST_DATA_DIR
     data_x = []
     data_y = []
     for cat in CATEGORIES:
@@ -36,7 +37,7 @@ def create_dataset(data_dir, percentage_of_data_set):
     y_data = [data_y[i] for i in index_list]
     return x_data, y_data
 
-create_dataset(TRAINING_DATA_DIR, 0.01)  # Generates 1% of the training data set
+create_dataset(percentage_of_data_set=0.01, training=True)  # Generates 1% of the training data set
 
 
 
