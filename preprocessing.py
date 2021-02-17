@@ -23,6 +23,13 @@ CLASS_WEIGHTS = {0: 33.0,
 
 
 def create_dataset(percentage_of_data_set, training=True):
+    """
+    Creates dataset as features, labels from data directory
+    and saves to numpy files to save space
+    :param percentage_of_data_set: how much of the total dataset to process
+    :param training: type of data set to create
+    :return: None
+    """
     data_dir = TRAINING_DATA_DIR if training else TEST_DATA_DIR
     data_x = []
     data_y = []
@@ -47,8 +54,17 @@ def create_dataset(percentage_of_data_set, training=True):
     else:
         np.save('test_data', x_data)
         np.save('test_labels', y_data)
+
+
+def load_dataset(train=True):
+    """
+    Loads train or test data from previously saved numpy arrays
+    :param train: determines data set
+    :return: features, labels
+    """
+    type = "training" if train else "test"
+    filename_x = f"{type}_data.npy"
+    filename_y = f"{type}_labels.npy"
+    x_data = np.load(filename_x)
+    y_data = np.load(filename_y)
     return x_data, y_data
-
-
-train_data, train_labels = create_dataset(percentage_of_data_set=0.1,
-                                          training=True)  # Generates 1% of the training data set
