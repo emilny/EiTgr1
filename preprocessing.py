@@ -22,7 +22,6 @@ CLASS_WEIGHTS = {0: 33.0,
                  2: 33.0}
 
 
-
 def create_dataset(percentage_of_data_set, training=True):
     data_dir = TRAINING_DATA_DIR if training else TEST_DATA_DIR
     data_x = []
@@ -30,8 +29,8 @@ def create_dataset(percentage_of_data_set, training=True):
     for cat in CATEGORIES:
         onehot = np.array(cats_to_onehots[cat])
         path = os.path.join(data_dir, cat)
-        for i, img in enumerate(tqdm(os.listdir(path))):
-            if i > percentage_of_data_set*len(os.listdir(path)):
+        for i, img in enumerate(tqdm(os.listdir(path), colour="#39FF14")):
+            if i > percentage_of_data_set * len(os.listdir(path)):
                 break
             img_array = cv2.imread(os.path.join(path, img))
             resized_array = cv2.resize(img_array, (IMG_SIZE, IMG_SIZE))
@@ -51,5 +50,5 @@ def create_dataset(percentage_of_data_set, training=True):
     return x_data, y_data
 
 
-
-train_data, train_labels = create_dataset(percentage_of_data_set=0.1, training=True)  # Generates 1% of the training data set
+train_data, train_labels = create_dataset(percentage_of_data_set=0.1,
+                                          training=True)  # Generates 1% of the training data set
