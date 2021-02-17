@@ -10,3 +10,6 @@ TEST_DATA_DIR = "Data/test"
 CATEGORIES = ["COVID19", "NORMAL", "PNEUMONIA"]
 
 
+
+
+
