@@ -17,9 +17,9 @@ cats_to_onehots = {"COVID19": [1, 0, 0],
 
 IMG_SIZE = 100
 
-CLASS_WEIGHTS = {0: 33.0,
-                 1: 34.0,
-                 2: 33.0}
+CLASS_WEIGHTS = {0: 50.0,  # React more heavily to COVID-19 cases, since set is unbalanced
+                 1: 25.0,
+                 2: 25.0}
 
 
 def create_dataset(percentage_of_data_set, training=True):
