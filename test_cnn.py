@@ -34,8 +34,8 @@ model.compile(optimizer=optimizers.Adam(),
                        metrics.TruePositives(),
                        metrics.TrueNegatives()])
 
-if os.path.exists('{}.meta'.format(MODEL_NAME)):
-    model.load(MODEL_NAME)
+if os.path.exists(f"models/{MODEL_NAME}"):
+    model.load_weights(filepath=f"models/{MODEL_NAME}")
     print('model loaded!')
 
 model.fit(x=X,
@@ -43,3 +43,5 @@ model.fit(x=X,
           epochs=3,
           validation_split=0.1,
           verbose=1)
+
+model.save(filepath=f"models/{MODEL_NAME}")
