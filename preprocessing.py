@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt  # For checking images along the way
 import random  # For shuffling data
 import os
 from tqdm import tqdm
+from tensorflow import keras
 
 TRAINING_DATA_DIR = "Data/train/"
 TEST_DATA_DIR = "Data/test/"
@@ -67,4 +68,5 @@ def load_dataset(train=True):
     filename_y = f"{type}_labels.npy"
     x_data = np.load(filename_x)
     y_data = np.load(filename_y)
-    return x_data, y_data
+    norm_x_data = keras.utils.normalize(x_data)
+    return norm_x_data, y_data
