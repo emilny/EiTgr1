@@ -1,41 +1,45 @@
-from tflearn.layers.conv import conv_2d, max_pool_2d
-from tflearn.layers.core import input_data, dropout, fully_connected
-from tflearn.layers.estimator import regression
-from tflearn import DNN
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
+from keras.models import Sequential
+from keras import optimizers, metrics
+
 import preprocessing
 import os
 
-#preprocessing.create_dataset(1)
+# preprocessing.create_dataset(1)
 
 LR = 0.01
 MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
 
-convnet = input_data(shape=[64, preprocessing.IMG_SIZE, preprocessing.IMG_SIZE, 3], name='input')
+X, Y = preprocessing.load_dataset(train=True)
 
-convnet = conv_2d(convnet, 32, 5, activation='relu')
-convnet = max_pool_2d(convnet, 5)
+x_shape = X[0].shape
 
-convnet = conv_2d(convnet, 64, 5, activation='relu')
-convnet = max_pool_2d(convnet, 5)
+model = Sequential()
 
-convnet = fully_connected(convnet, 1024, activation='relu')
-convnet = dropout(convnet, 0.8)
+filters = [16, 32, 64]
+for f in filters:
+    # Adding several conv layers with different filter sizes
+    model.add(layer=Conv2D(filters=f, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
+    model.add(layer=MaxPool2D(pool_size=(2, 2)))
 
-convnet = fully_connected(convnet, 2, activation='softmax')
-convnet = regression(convnet, optimizer='adam', learning_rate=LR, loss='categorical_crossentropy', name='targets')
+model.add(layer=Flatten())
+model.add(layer=Dense(units=1024, activation="relu"))
+model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
 
-model = DNN(convnet, tensorboard_dir='log')
+model.compile(optimizer=optimizers.Adam(),
+              loss="categorical_crossentropy",
+              metrics=['binary_accuracy',
+                       metrics.FalsePositives(),
+                       metrics.FalseNegatives(),
+                       metrics.TruePositives(),
+                       metrics.TrueNegatives()])
 
 if os.path.exists('{}.meta'.format(MODEL_NAME)):
     model.load(MODEL_NAME)
     print('model loaded!')
 
-X, Y = preprocessing.load_dataset(train=True)
-model.fit(X_inputs=X,
-          Y_targets=Y,
-          n_epoch=3,
-          validation_batch_size=0.1,
-          snapshot_step=500,
-          show_metric=True,
-          run_id=MODEL_NAME)
-
+model.fit(x=X,
+          y=Y,
+          epochs=3,
+          validation_split=0.1,
+          verbose=1)
