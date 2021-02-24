@@ -25,7 +25,7 @@ CLASS_WEIGHTS = {0: 50.0,  # React more heavily to COVID-19 cases, since set is 
                  2: 25.0}
 
 
-def create_dataset(percentage_of_data_set, training=True):
+def create_dataset(percentage_of_data_set=1, training=True):
     """
     Creates dataset as features, labels from data directory
     and saves to numpy files to save space
