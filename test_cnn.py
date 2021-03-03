@@ -59,3 +59,5 @@ model.fit(x=X,
 
 model.save_weights(filepath=f"models/{MODEL_NAME}")
 
+
+
