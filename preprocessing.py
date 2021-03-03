@@ -7,6 +7,8 @@ import os
 from tqdm import tqdm
 from tensorflow import keras
 
+
+
 TRAINING_DATA_DIR = "Data/train/"
 TEST_DATA_DIR = "Data/test/"
 
@@ -23,7 +25,7 @@ CLASS_WEIGHTS = {0: 50.0,  # React more heavily to COVID-19 cases, since set is 
                  2: 25.0}
 
 
-def create_dataset(percentage_of_data_set, training=True):
+def create_dataset(percentage_of_data_set=1, training=True):
     """
     Creates dataset as features, labels from data directory
     and saves to numpy files to save space
@@ -48,12 +50,13 @@ def create_dataset(percentage_of_data_set, training=True):
     index_list = [i for i in range(len(data_x))]
     np.random.shuffle(index_list)
     x_data = [data_x[i] for i in index_list]
+    norm_x_data = keras.utils.normalize(x_data)
     y_data = [data_y[i] for i in index_list]
     if training:
-        np.save('training_data', x_data)
+        np.save('training_data', norm_x_data)
         np.save('training_labels', y_data)
     else:
-        np.save('test_data', x_data)
+        np.save('test_data', norm_x_data)
         np.save('test_labels', y_data)
 
 
@@ -68,5 +71,4 @@ def load_dataset(train=True):
     filename_y = f"{type}_labels.npy"
     x_data = np.load(filename_x)
     y_data = np.load(filename_y)
-    norm_x_data = keras.utils.normalize(x_data)
-    return norm_x_data, y_data
+    return x_data, y_data
