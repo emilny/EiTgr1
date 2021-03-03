@@ -19,7 +19,7 @@ cats_to_onehots = {"COVID19": [1, 0, 0],
                    "NORMAL": [0, 1, 0],
                    "PNEUMONIA": [0, 0, 1]}
 
-IMG_SIZE = 1000
+IMG_SIZE = 100
 
 CLASS_WEIGHTS = {0: 50.0,  # React more heavily to COVID-19 cases, since set is unbalanced
                  1: 25.0,
