@@ -15,9 +15,9 @@ TEST_DATA_DIR = "Data/test/"
 
 CATEGORIES = ["COVID19", "NORMAL", "PNEUMONIA"]
 
-cats_to_onehots = {"COVID19": [1, 0, 0],
-                   "NORMAL": [0, 1, 0],
-                   "PNEUMONIA": [0, 0, 1]}
+cats_to_onehots = {"COVID19": [1.0, 0.0, 0.0],
+                   "NORMAL": [0.0, 1.0, 0.0],
+                   "PNEUMONIA": [0.0, 0.0, 1.0]}
 
 IMG_SIZE = 100
 
@@ -40,7 +40,7 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented_versions=
     for cat in CATEGORIES:
         onehot = np.array(cats_to_onehots[cat])
         path = os.path.join(data_dir, cat)
-        for i, img in enumerate(tqdm(os.listdir(path), colour="#39FF14")):
+        for i, img in enumerate(tqdm(os.listdir(path))):
             if i > percentage_of_data_set * len(os.listdir(path)):
                 break
             img_array = cv2.imread(os.path.join(path, img))
