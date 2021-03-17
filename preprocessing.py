@@ -72,3 +72,37 @@ def load_dataset(train=True):
     x_data = np.load(filename_x)
     y_data = np.load(filename_y)
     return x_data, y_data
+
+def find_size_range(train=True):
+    data_dir = TRAINING_DATA_DIR if train else TEST_DATA_DIR
+    largest = 0
+    smallest = 10000000
+    largest_dim = (None, None)
+    smallest_dim = (None, None)
+    for cat in CATEGORIES:
+        path = os.path.join(data_dir, cat)
+        for i, img in enumerate(tqdm(os.listdir(path), colour="#39FF14")):
+            img_array = cv2.imread(os.path.join(path, img))
+            shape = img_array.shape
+            height = shape[0]
+            width = shape[1]
+            if height*width > largest:
+                largest = height*width
+                largest_dim = (height, width)
+            elif height*width < smallest:
+                smallest = height*width
+                smallest_dim = (height, width)
+
+    return smallest_dim, largest_dim
+
+
+if __name__ == '__main__':
+    train_smallest_dim, train_largest_dim = find_size_range(train=True)
+    test_smallest_dim, test_largest_dim = find_size_range(train=False)
+    print("Train:")
+    print(f"Smallest img size: {train_smallest_dim}")
+    print(f"Largest img size: {train_largest_dim}")
+    print()
+    print("Test:")
+    print(f"Smallest img size: {test_smallest_dim}")
+    print(f"Largest img size: {test_largest_dim}")
