@@ -1,3 +1,4 @@
+import numpy as np  # Linalg library
 from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from keras.models import Sequential, load_model
 from keras import optimizers, metrics
@@ -5,6 +6,9 @@ from keras.callbacks import TensorBoard
 
 import preprocessing
 import os
+#from preprocessing import datagen
+
+
 
 #preprocessing.create_dataset(0.5, training=True)
 #preprocessing.create_dataset(1, training=False)
@@ -49,13 +53,30 @@ if os.path.exists(f"models/{MODEL_NAME}"):
     # print('model loaded!')
 
 tensorboard_callback = TensorBoard(log_dir="./logs")
-model.fit(x=X,
-          y=Y,
-          batch_size=100,
-          epochs=100,
-          validation_split=0.1,
-          verbose=0,
-          callbacks=[tensorboard_callback])
+
+model.fit(x = X, y = Y, batch_size=100, epochs=20, validation_split=0.1,
+          verbose = 2, callbacks=[tensorboard_callback])
+
+# model.fit_generator(datagen.flow(X, Y, batch_size=100),
+#           epochs=30,
+#           steps_per_epoch=len(X)//100,
+#           verbose=1,
+#           callbacks=[tensorboard_callback])
 
 model.save_weights(filepath=f"models/{MODEL_NAME}")
+
+test_x, test_y = preprocessing.load_dataset(train=False)
+
+predictions = model.predict(test_x)
+
+# testing:
+
+i = 0
+sum = 0
+for p in predictions:
+    diff = np.argmax(p) - np.argmax(test_y[i])
+    if diff == 0:
+        sum += 1
+    i += 1
+print(sum/i)
 

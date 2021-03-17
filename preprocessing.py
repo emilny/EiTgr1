@@ -49,10 +49,6 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented_versions=
             data_y.append(onehot)
     data_x = np.array(data_x)
 
-    # This is where training data is increased in size by way of data augmentation:
-    if training:
-        data_x = augment_data_set(orig_x=data_x, batch_size=augmented_versions)
-
     index_list = [i for i in range(len(data_x))]
     np.random.shuffle(index_list)
     x_data = [data_x[i] for i in index_list]
@@ -67,6 +63,11 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented_versions=
         np.save('test_data', norm_x_data)
         np.save('test_labels', y_data)
 
+    # This is where training data is increased in size by way of data augmentation:
+
+    if training and augmented_versions != 0:
+        datagen = augment_data_set(data_x, batch_size=augmented_versions)
+
 
 def augment_data_set(orig_x, batch_size):
     """
@@ -75,6 +76,7 @@ def augment_data_set(orig_x, batch_size):
     :param orig_x: Input images as np.arrays
     :return:
     """
+
     datagen = ImageDataGenerator(rescale=1./255,
                                  zoom_range=0.3,
                                  rotation_range=15,
@@ -82,17 +84,11 @@ def augment_data_set(orig_x, batch_size):
                                  height_shift_range=0.1,
                                  shear_range=0.1,
                                  horizontal_flip=True,
-                                 fill_mode='nearest')
+                                 fill_mode='nearest',
+                                 validation_split=0.1)
     datagen.fit(orig_x)
-    for batch in datagen.flow(x=orig_x, batch_size=batch_size):
-        im = batch[0]
-        plt.imshow(im)
-        plt.show()
-        exit()
-    return None
 
-
-
+    return datagen
 
 
 def load_dataset(train=True):
@@ -109,11 +105,4 @@ def load_dataset(train=True):
     return x_data, y_data
 
 
-#if __name__ == '__main__':
-#    create_dataset(0.01)
-    # x = load_dataset(train=True)[0][0]
-    # plt.imshow(x)
-    # plt.show()
-
-
-create_dataset(percentage_of_data_set=1., training=True, augmented_versions=3)
+#create_dataset(percentage_of_data_set=0.5, training=True, augmented_versions=0)
