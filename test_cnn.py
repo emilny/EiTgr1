@@ -14,9 +14,8 @@ from focal_loss import focal_loss
 
 
 
-#preprocessing.create_dataset(0.5, training=True)
-#preprocessing.create_dataset(0.5, training=False)
-#preprocessing.create_dataset(1, training=False)
+preprocessing.create_dataset(1, training=True)
+preprocessing.create_dataset(1, training=False)
 
 LR = 0.01
 MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
@@ -25,9 +24,9 @@ MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
 
 
 X, Y = preprocessing.load_dataset(train=True)
-print(len(X))
-exit()
-X, Y = X[0:int(len(X)*0.1)], Y[0:int(len(X)*0.1)]
+#print(len(X))
+#exit()
+#X, Y = X[0:int(len(X)*0.1)], Y[0:int(len(X)*0.1)]
 
 x_shape = X[0].shape
 input_tens = Input(shape=x_shape)
@@ -48,7 +47,7 @@ output = Dense(3, activation='softmax')(class1)
 # define new model
 model = Model(inputs=pre_trained.inputs, outputs=output)
 # summarize
-model.summary()
+#model.summary()
 
 """
 

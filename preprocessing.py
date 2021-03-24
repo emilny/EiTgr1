@@ -9,8 +9,8 @@ from tensorflow import keras
 
 
 
-TRAINING_DATA_DIR = "Data/train/"
-TEST_DATA_DIR = "Data/test/"
+TRAINING_DATA_DIR = "/Users/emilny/Downloads/Data/train/"
+TEST_DATA_DIR = "/Users/emilny/Downloads/Data/test/"
 
 CATEGORIES = ["COVID19", "NORMAL", "PNEUMONIA"]
 
