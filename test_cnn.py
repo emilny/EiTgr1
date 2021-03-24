@@ -1,7 +1,7 @@
 import numpy as np  # Linalg library
 from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Input
-from keras.models import Sequential, load_model
-from keras import optimizers, metrics, Model
+from keras.models import Sequential, load_model, Model
+from keras import optimizers, metrics
 from keras.callbacks import TensorBoard
 from keras.applications import vgg16
 
@@ -10,7 +10,7 @@ import os
 #from preprocessing import datagen
 from focal_loss import focal_loss
 
-from keras.applications import vgg16
+
 
 
 
@@ -29,12 +29,24 @@ x_shape = X[0].shape
 input_tens = Input(shape=x_shape)
 
 #model = Sequential()
-pre_trained = vgg16.VGG16(include_top=False, input_tensor=input_tens, pooling="max")
-print(pre_trained.inputs)
-exit()
+#pre_trained = vgg16.VGG16(include_top=False, input_tensor=input_tens, pooling="max")
 
-model = Model(input_shape=pre_trained.inputs, )
 
+
+# load model without classifier layers
+pre_trained = vgg16.VGG16(include_top=False, input_shape=x_shape)
+for layer in pre_trained.layers:
+    layer.trainable = False
+# add new classifier layers
+flat1 = Flatten()(pre_trained.layers[-1].output)
+class1 = Dense(1024, activation='relu')(flat1)
+output = Dense(3, activation='softmax')(class1)
+# define new model
+model = Model(inputs=pre_trained.inputs, outputs=output)
+# summarize
+model.summary()
+
+"""
 
 # Create first layer (to receive input)
 model.add(layer=Conv2D(filters=16, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
@@ -46,13 +58,16 @@ for f in filters:
     # Adding several conv layers with different filter sizes
     model.add(layer=Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
     model.add(layer=MaxPool2D(pool_size=(2, 2)))
+"""
 
-model.add(layer=Flatten())
-model.add(layer=Dense(units=1024, activation="relu"))
-model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
+
+#model.add(layer=Flatten())
+#model.add(layer=Dense(units=1024, activation="relu"))
+#model.add(layer=Dense(units=1024, activation="relu"))
+#model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
 
 model.compile(optimizer=optimizers.Adam(),
-              loss=focal_loss(gamma=0.8),
+              loss="categorical_crossentropy",
               metrics=['binary_accuracy',
                        metrics.FalsePositives(),
                        metrics.FalseNegatives(),
