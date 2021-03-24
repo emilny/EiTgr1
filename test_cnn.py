@@ -25,6 +25,8 @@ MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
 
 
 X, Y = preprocessing.load_dataset(train=True)
+print(len(X))
+exit()
 X, Y = X[0:int(len(X)*0.1)], Y[0:int(len(X)*0.1)]
 
 x_shape = X[0].shape
@@ -83,12 +85,12 @@ if os.path.exists(f"models/{MODEL_NAME}"):
     # print('model loaded!')
 
 tensorboard_callback = TensorBoard(log_dir="./logs")
-
+"""
 checkpointer = ModelCheckpoint(filepath='/tmp/checkpoint',
                                mode='max', verbose=2, save_best_only=True)
-
+"""
 model.fit(x = X, y = Y, batch_size=100, epochs=20, validation_split=0.1,
-          callbacks=[tensorboard_callback, checkpointer])
+          callbacks=[tensorboard_callback]),# checkpointer])
 
 # model.fit_generator(datagen.flow(X, Y, batch_size=100),
 #           epochs=30,
