@@ -10,8 +10,8 @@ from keras.preprocessing.image import ImageDataGenerator
 
 
 
-TRAINING_DATA_DIR = "Data/train/"
-TEST_DATA_DIR = "Data/test/"
+TRAINING_DATA_DIR = "/Data/train/"
+TEST_DATA_DIR = "\Data/test/"
 
 CATEGORIES = ["COVID19", "NORMAL", "PNEUMONIA"]
 
@@ -105,4 +105,4 @@ def load_dataset(train=True):
     return x_data, y_data
 
 
-#create_dataset(percentage_of_data_set=0.5, training=True, augmented_versions=0)
+#create_dataset(percentage_of_data_set=1, training=True, augmented_versions=0)

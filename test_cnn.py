@@ -7,6 +7,7 @@ from keras.callbacks import TensorBoard
 import preprocessing
 import os
 #from preprocessing import datagen
+from focal_loss import focal_loss
 
 
 
@@ -40,7 +41,7 @@ model.add(layer=Dense(units=1024, activation="relu"))
 model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
 
 model.compile(optimizer=optimizers.Adam(),
-              loss="categorical_crossentropy",
+              loss=focal_loss(gamma=0.8),
               metrics=['binary_accuracy',
                        metrics.FalsePositives(),
                        metrics.FalseNegatives(),
@@ -80,3 +81,8 @@ for p in predictions:
     i += 1
 print(sum/i)
 
+# Test accuracy for hele datasettet:
+# 0.826 for focal med gamma = 2
+# 0.821 for crossentropy
+# 0.821 for focal loss med gamma = 1
+# 0.814 for focal loss med gamma = 3
