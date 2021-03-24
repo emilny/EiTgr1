@@ -26,7 +26,7 @@ MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
 
 X, Y = preprocessing.load_dataset(train=True)
 X_val, Y_val = preprocessing.load_dataset(train = True, validation=True)
-train_datagen, val_datagen = preprocessing.create_train_and_validation_gens(2)
+train_datagen, val_datagen = preprocessing.create_train_and_validation_gens(1)
 
 
 #X, Y = X[0:int(len(X)*0.1)], Y[0:int(len(X)*0.1)]
@@ -94,13 +94,13 @@ if os.path.exists(f"models/{MODEL_NAME}"):
 #model.fit(x = X, y = Y, batch_size=100, epochs=20, validation_split=0.1,
 #          callbacks=[tensorboard_callback])
 
-model.fit_generator(train_datagen, steps_per_epoch=len(X)//20,
+history = model.fit_generator(train_datagen, #steps_per_epoch=len(X)//20,
                     validation_data=val_datagen,
-                    validation_steps=len(X_val)//20,
+                    #validation_steps=len(X_val)//20,
                     epochs=20,
                     verbose=2)
 
-model.save_weights(filepath=f"models/{MODEL_NAME}")
+#model.save_weights(filepath=f"models/{MODEL_NAME}")
 
 test_x, test_y = preprocessing.load_dataset(train=False)
 

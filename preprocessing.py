@@ -10,8 +10,8 @@ from keras.preprocessing.image import ImageDataGenerator
 
 
 
-TRAINING_DATA_DIR = r"C:\Users\eivol\OneDrive\Dokumenter\GitHub/Data/train/"
-TEST_DATA_DIR = r"C:\Users\eivol\OneDrive\Dokumenter\GitHub\Data/test/"
+TRAINING_DATA_DIR = "/Users/emilny/Downloads/Data/train/"
+TEST_DATA_DIR = "/Users/emilny/Downloads/Data/test/"
 
 CATEGORIES = ["COVID19", "NORMAL", "PNEUMONIA"]
 
@@ -95,14 +95,7 @@ def create_train_and_validation_gens(batch_size):
                                  horizontal_flip=True,
                                  fill_mode='nearest')
 
-    validation_datagen = ImageDataGenerator(rescale=1. / 255,
-                                       zoom_range=0.3,
-                                       rotation_range=15,
-                                       width_shift_range=0.1,
-                                       height_shift_range=0.1,
-                                       shear_range=0.1,
-                                       horizontal_flip=True,
-                                       fill_mode='nearest')
+    validation_datagen = ImageDataGenerator(rescale=1. / 255)
 
 
 
