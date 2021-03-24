@@ -2,7 +2,7 @@ import numpy as np  # Linalg library
 from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Input
 from keras.models import Sequential, load_model, Model
 from keras import optimizers, metrics
-from keras.callbacks import TensorBoard
+from keras.callbacks import TensorBoard, ModelCheckpoint
 from keras.applications import vgg16
 
 import preprocessing
@@ -15,6 +15,7 @@ from focal_loss import focal_loss
 
 
 #preprocessing.create_dataset(0.5, training=True)
+#preprocessing.create_dataset(0.5, training=False)
 #preprocessing.create_dataset(1, training=False)
 
 LR = 0.01
@@ -24,6 +25,7 @@ MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
 
 
 X, Y = preprocessing.load_dataset(train=True)
+X, Y = X[0:int(len(X)*0.1)], Y[0:int(len(X)*0.1)]
 
 x_shape = X[0].shape
 input_tens = Input(shape=x_shape)
@@ -58,6 +60,7 @@ for f in filters:
     # Adding several conv layers with different filter sizes
     model.add(layer=Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
     model.add(layer=MaxPool2D(pool_size=(2, 2)))
+    model.add(Dropout(0.5)
 """
 
 
@@ -81,8 +84,11 @@ if os.path.exists(f"models/{MODEL_NAME}"):
 
 tensorboard_callback = TensorBoard(log_dir="./logs")
 
+checkpointer = ModelCheckpoint(filepath='/tmp/checkpoint',
+                               mode='max', verbose=2, save_best_only=True)
+
 model.fit(x = X, y = Y, batch_size=100, epochs=20, validation_split=0.1,
-          verbose = 2, callbacks=[tensorboard_callback])
+          callbacks=[tensorboard_callback, checkpointer])
 
 # model.fit_generator(datagen.flow(X, Y, batch_size=100),
 #           epochs=30,
@@ -107,6 +113,8 @@ def test_accuracy(model, test_x):
             sum += 1
         i += 1
     print(sum/i)
+
+test_accuracy(model, test_x)
 
 # Test accuracy for hele datasettet:
 # 0.826 for focal med gamma = 2
