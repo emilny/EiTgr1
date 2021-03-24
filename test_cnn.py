@@ -14,8 +14,9 @@ from focal_loss import focal_loss
 
 
 
-preprocessing.create_dataset(1, training=True)
-preprocessing.create_dataset(1, training=False)
+preprocessing.create_dataset(0.1, training=True, augmented = True)
+preprocessing.create_dataset(0.1, training=False)
+#preprocessing.create_dataset(1, training=False)
 
 LR = 0.01
 MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
@@ -24,8 +25,10 @@ MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
 
 
 X, Y = preprocessing.load_dataset(train=True)
-#print(len(X))
-#exit()
+X_val, Y_val = preprocessing.load_dataset(train = True, validation=True)
+train_datagen, val_datagen = preprocessing.create_train_and_validation_gens(2)
+
+
 #X, Y = X[0:int(len(X)*0.1)], Y[0:int(len(X)*0.1)]
 
 x_shape = X[0].shape
@@ -83,19 +86,19 @@ if os.path.exists(f"models/{MODEL_NAME}"):
     # model.load_weights(filepath=f"models/{MODEL_NAME}")
     # print('model loaded!')
 
-tensorboard_callback = TensorBoard(log_dir="./logs")
-"""
-checkpointer = ModelCheckpoint(filepath='/tmp/checkpoint',
-                               mode='max', verbose=2, save_best_only=True)
-"""
-model.fit(x = X, y = Y, batch_size=100, epochs=20, validation_split=0.1,
-          callbacks=[tensorboard_callback]),# checkpointer])
+#tensorboard_callback = TensorBoard(log_dir="./logs")
 
-# model.fit_generator(datagen.flow(X, Y, batch_size=100),
-#           epochs=30,
-#           steps_per_epoch=len(X)//100,
-#           verbose=1,
-#           callbacks=[tensorboard_callback])
+#checkpointer = ModelCheckpoint(filepath='/tmp/checkpoint',
+#                               mode='max', verbose=2, save_best_only=True)
+
+#model.fit(x = X, y = Y, batch_size=100, epochs=20, validation_split=0.1,
+#          callbacks=[tensorboard_callback])
+
+model.fit_generator(train_datagen, steps_per_epoch=len(X)//20,
+                    validation_data=val_datagen,
+                    validation_steps=len(X_val)//20,
+                    epochs=20,
+                    verbose=2)
 
 model.save_weights(filepath=f"models/{MODEL_NAME}")
 
