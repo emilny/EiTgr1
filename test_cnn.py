@@ -9,6 +9,8 @@ import os
 #from preprocessing import datagen
 from focal_loss import focal_loss
 
+from keras.applications import vgg16
+
 
 
 #preprocessing.create_dataset(0.5, training=True)
