@@ -10,8 +10,8 @@ from keras.preprocessing.image import ImageDataGenerator
 
 
 
-TRAINING_DATA_DIR = "/Data/train/"
-TEST_DATA_DIR = "\Data/test/"
+TRAINING_DATA_DIR = r"C:\Users\eivol\OneDrive\Dokumenter\GitHub/Data/train/"
+TEST_DATA_DIR = r"C:\Users\eivol\OneDrive\Dokumenter\GitHub\Data/test/"
 
 CATEGORIES = ["COVID19", "NORMAL", "PNEUMONIA"]
 
@@ -26,7 +26,7 @@ CLASS_WEIGHTS = {0: 50.0,  # React more heavily to COVID-19 cases, since set is 
                  2: 25.0}
 
 
-def create_dataset(percentage_of_data_set=1., training=True, augmented_versions=3):
+def create_dataset(percentage_of_data_set=1., training=True, augmented = False, validation_split = 0.1):
     """
     Creates dataset as features, labels from data directory
     and saves to numpy files to save space
@@ -52,9 +52,20 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented_versions=
     index_list = [i for i in range(len(data_x))]
     np.random.shuffle(index_list)
     x_data = [data_x[i] for i in index_list]
-
-    norm_x_data = keras.utils.normalize(x_data)
     y_data = [data_y[i] for i in index_list]
+
+
+    if training and augmented:
+        split_index = int(len(x_data)*validation_split)
+        train_data,  validation_data = x_data[split_index:], x_data[:split_index]
+        train_labels, validation_labels = y_data[split_index:], y_data[:split_index]
+        y_data = train_labels
+        norm_x_data = train_data # dont want to normalize when using ImgGenerator
+        np.save("validation_data", validation_data)
+        np.save("validation_labels", validation_labels)
+    else:
+        norm_x_data = keras.utils.normalize(x_data)
+
     if training:
         print("Saved!")
         np.save('training_data', norm_x_data)
@@ -65,44 +76,66 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented_versions=
 
     # This is where training data is increased in size by way of data augmentation:
 
-    if training and augmented_versions != 0:
-        datagen = augment_data_set(data_x, batch_size=augmented_versions)
-
-
-def augment_data_set(orig_x, batch_size):
+def create_train_and_validation_gens(batch_size):
     """
     Augments images by performing several (=batch_size) augmenting transformations
     Saves augmented images to augmented folder
     :param orig_x: Input images as np.arrays
     :return:
     """
+    train_x, train_y = load_dataset(train = True)
+    val_x, val_y = load_dataset(train = True, validation=True)
 
-    datagen = ImageDataGenerator(rescale=1./255,
+    train_datagen = ImageDataGenerator(rescale=1./255,
                                  zoom_range=0.3,
                                  rotation_range=15,
                                  width_shift_range=0.1,
                                  height_shift_range=0.1,
                                  shear_range=0.1,
                                  horizontal_flip=True,
-                                 fill_mode='nearest',
-                                 validation_split=0.1)
-    datagen.fit(orig_x)
+                                 fill_mode='nearest')
 
-    return datagen
+    validation_datagen = ImageDataGenerator(rescale=1. / 255,
+                                       zoom_range=0.3,
+                                       rotation_range=15,
+                                       width_shift_range=0.1,
+                                       height_shift_range=0.1,
+                                       shear_range=0.1,
+                                       horizontal_flip=True,
+                                       fill_mode='nearest')
 
 
-def load_dataset(train=True):
+
+    train_datagen = train_datagen.flow(train_x, train_y, batch_size = batch_size)
+    validation_datagen = validation_datagen.flow(val_x, val_y, batch_size=batch_size)
+
+
+    #img = [next(datagen) for i in range(0, 5)]
+
+    #fig, ax = plt.subplots(1, 5, figsize=(16, 6))
+    #print('Labels:', [item[1][0] for item in img])
+    #for i in range(0, 5):
+    #    ax[i].imshow(img[i][0][0])
+    #plt.show()
+
+    return train_datagen, validation_datagen
+
+
+def load_dataset(train=True, validation = False):
     """
     Loads train or test data from previously saved numpy arrays
     :param train: determines data set
     :return: features, labels
     """
-    type = "training" if train else "test"
-    filename_x = f"{type}_data.npy"
-    filename_y = f"{type}_labels.npy"
+    if validation:
+        typ = "validation"
+    else:
+        typ = "training" if train else "test"
+    filename_x = f"{typ}_data.npy"
+    filename_y = f"{typ}_labels.npy"
     x_data = np.load(filename_x)
     y_data = np.load(filename_y)
+
+
     return x_data, y_data
 
-
-#create_dataset(percentage_of_data_set=1, training=True, augmented_versions=0)
