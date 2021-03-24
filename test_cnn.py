@@ -1,8 +1,9 @@
 import numpy as np  # Linalg library
-from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Input
 from keras.models import Sequential, load_model
-from keras import optimizers, metrics
+from keras import optimizers, metrics, Model
 from keras.callbacks import TensorBoard
+from keras.applications import vgg16
 
 import preprocessing
 import os
@@ -19,11 +20,19 @@ MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
 
 #model = load_model(filepath=f"models/{MODEL_NAME}")
 
+
 X, Y = preprocessing.load_dataset(train=True)
 
 x_shape = X[0].shape
+input_tens = Input(shape=x_shape)
 
-model = Sequential()
+#model = Sequential()
+pre_trained = vgg16.VGG16(include_top=False, input_tensor=input_tens, pooling="max")
+print(pre_trained.inputs)
+exit()
+
+model = Model(input_shape=pre_trained.inputs, )
+
 
 # Create first layer (to receive input)
 model.add(layer=Conv2D(filters=16, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
@@ -68,18 +77,19 @@ model.save_weights(filepath=f"models/{MODEL_NAME}")
 
 test_x, test_y = preprocessing.load_dataset(train=False)
 
-predictions = model.predict(test_x)
 
 # testing:
 
-i = 0
-sum = 0
-for p in predictions:
-    diff = np.argmax(p) - np.argmax(test_y[i])
-    if diff == 0:
-        sum += 1
-    i += 1
-print(sum/i)
+def test_accuracy(model, test_x):
+    predictions = model.predict(test_x)
+    i = 0
+    sum = 0
+    for p in predictions:
+        diff = np.argmax(p) - np.argmax(test_y[i])
+        if diff == 0:
+            sum += 1
+        i += 1
+    print(sum/i)
 
 # Test accuracy for hele datasettet:
 # 0.826 for focal med gamma = 2
