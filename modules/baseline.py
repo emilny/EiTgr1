@@ -1,0 +1,31 @@
+from keras.models import Sequential
+from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
+from keras import optimizers
+from focal_loss import focal_loss
+from keras.callbacks import TensorBoard
+
+
+
+def gennet_baseline(name, x_shape, use_focal=False):
+    model = Sequential(name=name)
+
+    # Create first layer (to receive input)
+    model.add(layer=Conv2D(filters=16, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
+    model.add(layer=MaxPool2D(pool_size=(2, 2)))
+
+    # Create additional Convolutional layers
+    filters = [32, 64]
+    for f in filters:
+        # Adding several conv layers with different filter sizes
+        model.add(layer=Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
+        model.add(layer=MaxPool2D(pool_size=(2, 2)))
+        model.add(Dropout(0.5))
+    model.add(layer=Flatten())
+    model.add(layer=Dense(units=1024, activation="relu"))
+    #model.add(layer=Dense(units=1024, activation="relu")) Might not need double dense layers
+    model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
+
+    model.compile(optimizer=optimizers.Adam(),
+                  loss= focal_loss if use_focal else "categorical_crossentropy",
+                  metrics=['binary_accuracy'])
+    return model
