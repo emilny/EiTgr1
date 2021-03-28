@@ -8,8 +8,6 @@ from tqdm import tqdm
 from tensorflow import keras
 from keras.preprocessing.image import ImageDataGenerator
 
-
-
 TRAINING_DATA_DIR = "/Users/emilny/Downloads/Data/train/"
 TEST_DATA_DIR = "/Users/emilny/Downloads/Data/test/"
 
@@ -26,10 +24,11 @@ CLASS_WEIGHTS = {0: 50.0,  # React more heavily to COVID-19 cases, since set is 
                  2: 25.0}
 
 
-def create_dataset(percentage_of_data_set=1., training=True, augmented = False, validation_split = 0.1):
+def create_dataset(percentage_of_data_set=1., training=True, augmented=False):
     """
     Creates dataset as features, labels from data directory
     and saves to numpy files to save space
+    :param augmented: Determines whether we are prepping data for augmentation generators or normalizing
     :param percentage_of_data_set: how much of the total dataset to process
     :param training: type of data set to create
     :return: None
@@ -40,7 +39,7 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented = False, 
     for cat in CATEGORIES:
         onehot = np.array(cats_to_onehots[cat])
         path = os.path.join(data_dir, cat)
-        for i, img in enumerate(tqdm(os.listdir(path))):
+        for i, img in enumerate(tqdm(os.listdir(path), colour='#39ff14')):
             if i > percentage_of_data_set * len(os.listdir(path)):
                 break
             img_array = cv2.imread(os.path.join(path, img))
@@ -54,81 +53,78 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented = False, 
     x_data = [data_x[i] for i in index_list]
     y_data = [data_y[i] for i in index_list]
 
-
-    if training and augmented:
-        split_index = int(len(x_data)*validation_split)
-        train_data,  validation_data = x_data[split_index:], x_data[:split_index]
-        train_labels, validation_labels = y_data[split_index:], y_data[:split_index]
-        y_data = train_labels
-        norm_x_data = train_data # dont want to normalize when using ImgGenerator
-        np.save("validation_data", validation_data)
-        np.save("validation_labels", validation_labels)
-    else:
-        norm_x_data = keras.utils.normalize(x_data)
+    if not augmented:  # Don't want to normalize when we are using Datagenerators
+        x_data = keras.utils.normalize(x_data)
 
     if training:
-        print("Saved!")
-        np.save('training_data', norm_x_data)
+        print("Training data saved!")
+        np.save('training_data', x_data)
         np.save('training_labels', y_data)
     else:
-        np.save('test_data', norm_x_data)
+        print("Test data saved!")
+        np.save('test_data', x_data)
         np.save('test_labels', y_data)
 
-    # This is where training data is increased in size by way of data augmentation:
 
-def create_train_and_validation_gens(batch_size):
+def create_train_and_validation_gens(batch_size, validation_split):
     """
     Augments images by performing several (=batch_size) augmenting transformations
     Saves augmented images to augmented folder
-    :param orig_x: Input images as np.arrays
-    :return:
+    :param validation_split: Split percentage for validation set
+    :return: Two data generators, one for train and one for validation, validation is not augmented
     """
-    train_x, train_y = load_dataset(train = True)
-    val_x, val_y = load_dataset(train = True, validation=True)
+    train_x, train_y = load_dataset(train=True)  # Load full train set
+
+    # Perform validation split
+    split_idx = int(len(train_x) * validation_split)
+
+    train_x, train_y, val_x, val_y = train_x[split_idx:], train_y[split_idx:], train_x[:split_idx], train_y[:split_idx]
 
     train_datagen = ImageDataGenerator(rescale=1./255,
-                                 zoom_range=0.3,
-                                 rotation_range=15,
-                                 width_shift_range=0.1,
-                                 height_shift_range=0.1,
-                                 shear_range=0.1,
-                                 horizontal_flip=True,
-                                 fill_mode='nearest')
+                                       zoom_range=0.3,
+                                       rotation_range=15,
+                                       width_shift_range=0.1,
+                                       height_shift_range=0.1,
+                                       shear_range=0.1,
+                                       horizontal_flip=True,
+                                       fill_mode='nearest')
 
     validation_datagen = ImageDataGenerator(rescale=1. / 255)
 
-
-
-    train_datagen = train_datagen.flow(train_x, train_y, batch_size = batch_size)
+    train_datagen = train_datagen.flow(train_x, train_y, batch_size=batch_size)
     validation_datagen = validation_datagen.flow(val_x, val_y, batch_size=batch_size)
-
-
-    #img = [next(datagen) for i in range(0, 5)]
-
-    #fig, ax = plt.subplots(1, 5, figsize=(16, 6))
-    #print('Labels:', [item[1][0] for item in img])
-    #for i in range(0, 5):
-    #    ax[i].imshow(img[i][0][0])
-    #plt.show()
 
     return train_datagen, validation_datagen
 
 
-def load_dataset(train=True, validation = False):
+def load_dataset(train=True):
     """
     Loads train or test data from previously saved numpy arrays
     :param train: determines data set
     :return: features, labels
     """
-    if validation:
-        typ = "validation"
-    else:
-        typ = "training" if train else "test"
+
+    typ = "training" if train else "test"
     filename_x = f"{typ}_data.npy"
     filename_y = f"{typ}_labels.npy"
     x_data = np.load(filename_x)
     y_data = np.load(filename_y)
-
-
     return x_data, y_data
 
+
+if __name__ == '__main__':
+    create_dataset(percentage_of_data_set=0.1, training=True, augmented=True)
+    train_datagen, val_datagen = create_train_and_validation_gens(1, validation_split=0.1)
+
+    imgtrain = [next(train_datagen) for i in range(0, 5)]
+    imgval = [next(val_datagen) for i in range(0, 5)]
+
+    fig, ax = plt.subplots(1, 10, figsize=(16, 6))
+    # print('Labels:', [item[1][0] for item in img])
+    for i in range(0, 10):
+        if i < 5:
+            ax[i].imshow(imgval[i][0][0])
+        else:
+            ax[i].imshow(imgtrain[i - 5][0][0])
+
+    plt.show()
