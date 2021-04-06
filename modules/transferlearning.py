@@ -8,7 +8,14 @@ from focal_loss import focal_loss
 
 
 def gennet_transfer_learning(x_shape, use_focal=False):
-
+    """
+    Loads a pretrained network and builds a some final layers with hard-coded parameters,
+    compiles and returns an untrained model
+    :param name: Name of the model
+    :param x_shape: Shape of input layer to accommodate input features
+    :param use_focal: Whether or not to use focal loss as loss function. False: categorical crossentropy
+    :return: untrained model
+    """
     # Load a pretrained model
     pre_trained = vgg16.VGG16(include_top=False, input_shape=x_shape)
 

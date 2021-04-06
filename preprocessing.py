@@ -19,15 +19,10 @@ cats_to_onehots = {"COVID19": [1.0, 0.0, 0.0],
 
 IMG_SIZE = 100
 
-CLASS_WEIGHTS = {0: 50.0,  # React more heavily to COVID-19 cases, since set is unbalanced
-                 1: 25.0,
-                 2: 25.0}
-
 
 def create_dataset(percentage_of_data_set=1., training=True, augmented=False):
     """
-    Creates dataset as features, labels from data directory
-    and saves to numpy files to save space
+    Creates dataset as features and labels from data directory and saves to numpy files to save space
     :param augmented: Determines whether we are prepping data for augmentation generators or normalizing
     :param percentage_of_data_set: how much of the total dataset to process
     :param training: type of data set to create

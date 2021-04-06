@@ -7,6 +7,13 @@ from keras.callbacks import TensorBoard
 
 
 def gennet_baseline(name, x_shape, use_focal=False):
+    """
+    Generates a network with some hard-coded parameters, compiles and returns an untrained model
+    :param name: Name of the model
+    :param x_shape: Shape of input layer to accommodate input features
+    :param use_focal: Whether or not to use focal loss as loss function. False: categorical crossentropy
+    :return: untrained model
+    """
     model = Sequential(name=name)
 
     # Create first layer (to receive input)
