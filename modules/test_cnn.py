@@ -1,4 +1,8 @@
-import numpy as np  # Linalg library
+"""
+This module is for training and testing different kinds of Convolutional neural networks
+Perform comparisons and choose the network configuration that yields the best results!
+"""
+import numpy as np
 from keras.callbacks import TensorBoard, ModelCheckpoint
 import preprocessing
 from modules.transferlearning import gennet_transfer_learning
@@ -9,7 +13,7 @@ from focal_loss import focal_loss
 def test_accuracy(model, test_x, test_y):
     """
     Function for testing a finished model on the final test set
-    :param model: Fully trained model
+    :param model: Trained model
     :param test_x: featureset
     :param test_y: labels for featuresets
     :return: binary accuracy score as Correct/Correct+False
@@ -25,8 +29,14 @@ def test_accuracy(model, test_x, test_y):
     return sum/i
 
 
-def prep_generators(percentage=None):
-    # Create train and validation data sets and store these separately. Split defaults to 10%
+def get_generators(percentage=None):
+    """
+    Create generators for data augmentation models, if percentage is not given, the data is assumed to be
+    preprocessed already
+    :param percentage: Percent of total data set to include ( <100% for preliminary testing)
+    :return: Two data generators and the test set
+    """
+
     if percentage is not None:
         preprocessing.create_dataset(percentage, training=True, augmented=True)
         preprocessing.create_dataset(percentage, training=False)
@@ -35,22 +45,40 @@ def prep_generators(percentage=None):
     return train_datagen, val_datagen, X_test, Y_test
 
 def prep_train_data(percentage=None):
-     # Create numpy arrays from data sets. This has to be done differently for data augmentation model
+    """
+    Create numpy arrays from data sets.
+    NOTE: This has to be done differently for data augmentation model, use get_generators instead
+    :param percentage: Percent of total data set to include ( <100% for preliminary testing)
+    :return: Train and test set (train is not split into train/validation yet)
+    """
+
     if percentage is not None:
         preprocessing.create_dataset(percentage, training=True, augmented=False)
         preprocessing.create_dataset(percentage, training=False)
-    X_train, Y_train = preprocessing.load_dataset(train=True) # Load train data, np.arrays
-    X_test, Y_test = preprocessing.load_dataset(train=False) # Load test data, np.arrays
+    X_train, Y_train = preprocessing.load_dataset(train=True)  # Load train data, np.arrays
+    X_test, Y_test = preprocessing.load_dataset(train=False)  # Load test data, np.arrays
     return X_train, Y_train, X_test, Y_test
 
 
 def train_test_model(model, X_train, Y_train, X_test, Y_test, validation_split=0.1):
+    """
+    Train a model that has already been compiled, on the given data set, and then test it on the test set.
+    :param model: A precompiled model, untrained (or pre-trained as VGG16 etc)
+    :param X_train: Train featuresets
+    :param Y_train: Train labels
+    :param X_test: Test featuresets
+    :param Y_test: Test labels
+    :param validation_split: Percent of train set to hold out for validation, defaults to 10%
+    :return:
+    """
+
     # Create tensorboard callback for visualisations of training process
     tensorboard_callback = TensorBoard(log_dir="./logs")
 
-
-    # Train model using ordinary fit TODO: Update this to fit_generator to capture model at best before overfitting
-    model.fit(x = X_train, y = Y_train, batch_size=100, epochs=20, validation_split=validation_split,
+    # Train model using ordinary fit
+    # TODO: Update this to fit_generator to capture model at best before overfitting
+    # TODO: WE ARE NOT SAVING ANYTHING AT THIS POINT, MAKE SURE TO IMPLEMENT SAVE/LOAD FUNCTIONALITY
+    model.fit(x=X_train, y=Y_train, batch_size=100, epochs=20, validation_split=validation_split,
               callbacks=[tensorboard_callback])
 
     accuracy = test_accuracy(model, X_test, Y_test)
@@ -62,7 +90,7 @@ def train_test_model(model, X_train, Y_train, X_test, Y_test, validation_split=0
 def train_test_model_data_augmentation(model, train_datagen, val_datagen, X_test, Y_test):
     """
     This method uses slightly different input approach since data is augmented on the fly,
-    i.e. we need to pass data-generators instead of x_train (and a separate validation datagen, which only rescales)
+    i.e. we need to pass data-generators instead of x_train (and a separate validation datagen, which only rescales imgs)
 
     :param train_datagen: Data augmentation generator, takes in X_data and outputs augmented pictures
     :param val_datagen: Just a rescaling generator for validation samples
@@ -70,7 +98,6 @@ def train_test_model_data_augmentation(model, train_datagen, val_datagen, X_test
     :param Y_test:
     :return: None
     """
-
 
     # Create tensorboard callback for visualisations of training process
     tensorboard_callback = TensorBoard(log_dir="../logs")
@@ -92,6 +119,11 @@ def train_test_model_data_augmentation(model, train_datagen, val_datagen, X_test
 
 
 if __name__ == '__main__':
+    # TODO Test the two different kinds of models with and without both focal loss and data augmentation:
+    # Transfer learning
+    # Baseline
+    # TODO Find out about suitable parameters and make an educated guess
+
     x_shape = (100, 100, 3) # Hardcoded for now
 
     #model_baseline = gennet_baseline(name="Test01", x_shape=x_shape)
