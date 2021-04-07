@@ -124,14 +124,15 @@ if __name__ == '__main__':
     # Baseline
     # TODO Find out about suitable parameters and make an educated guess
 
-    x_shape = (100, 100, 3) # Hardcoded for now
+    x_shape = (100, 100, 3)  # Hardcoded for now
 
     #model_baseline = gennet_baseline(name="Test01", x_shape=x_shape)
     model_transfer_learning = gennet_transfer_learning(x_shape)
 
     t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)
+    # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)
     train_test_model_data_augmentation(model_transfer_learning, t_datagen, val_datagen, X_test, Y_test)
-    #train_test_model(model_baseline,X_train,Y_train, X_test,Y_test)
+    # train_test_model(model_baseline,X_train,Y_train, X_test,Y_test)
 
 
 
