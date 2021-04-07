@@ -2,7 +2,6 @@ from keras import optimizers
 from keras.applications import vgg16
 from keras.layers import Flatten, Dense
 from keras.models import Model
-from keras.callbacks import TensorBoard
 
 from focal_loss import focal_loss
 

@@ -7,7 +7,6 @@ from keras.callbacks import TensorBoard, ModelCheckpoint
 import preprocessing
 from modules.transferlearning import gennet_transfer_learning
 from modules.baseline import gennet_baseline
-from focal_loss import focal_loss
 
 
 def test_accuracy(model, test_x, test_y):
@@ -40,7 +39,7 @@ def get_generators(percentage=None):
     if percentage is not None:
         preprocessing.create_dataset(percentage, training=True, augmented=True)
         preprocessing.create_dataset(percentage, training=False)
-    train_datagen, val_datagen = preprocessing.create_train_and_validation_gens(1, validation_split=0.1)
+    train_datagen, val_datagen = preprocessing.create_train_and_validation_gens(batch_sizes=(30, 20), validation_split=0.2)
     X_test, Y_test = preprocessing.load_dataset(train=False)
     return train_datagen, val_datagen, X_test, Y_test
 
@@ -60,7 +59,7 @@ def prep_train_data(percentage=None):
     return X_train, Y_train, X_test, Y_test
 
 
-def train_test_model(model, X_train, Y_train, X_test, Y_test, validation_split=0.1):
+def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_split=0.1):
     """
     Train a model that has already been compiled, on the given data set, and then test it on the test set.
     :param model: A precompiled model, untrained (or pre-trained as VGG16 etc)
@@ -73,13 +72,14 @@ def train_test_model(model, X_train, Y_train, X_test, Y_test, validation_split=0
     """
 
     # Create tensorboard callback for visualisations of training process
-    tensorboard_callback = TensorBoard(log_dir="./logs")
+    tensorboard_callback = TensorBoard(log_dir=f"./logs_{name}")
+
+    # Create checkpointer to save best model at each epoch, making sure we capture the best before overfitting occurs
+    checkpointer = ModelCheckpoint(filepath=f"best_{name}.hdf5", save_best_only=True)
 
     # Train model using ordinary fit
-    # TODO: Update this to fit_generator to capture model at best before overfitting
-    # TODO: WE ARE NOT SAVING ANYTHING AT THIS POINT, MAKE SURE TO IMPLEMENT SAVE/LOAD FUNCTIONALITY
-    model.fit(x=X_train, y=Y_train, batch_size=100, epochs=20, validation_split=validation_split,
-              callbacks=[tensorboard_callback])
+    model.fit(x=X_train, y=Y_train, batch_size=30, epochs=50, validation_split=validation_split,
+              callbacks=[tensorboard_callback, checkpointer])
 
     accuracy = test_accuracy(model, X_test, Y_test)
 
@@ -87,7 +87,7 @@ def train_test_model(model, X_train, Y_train, X_test, Y_test, validation_split=0
     # Does not save model at this point, this should be implemented along with fit_generator and checkpointer
 
 
-def train_test_model_data_augmentation(model, train_datagen, val_datagen, X_test, Y_test):
+def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, X_test, Y_test):
     """
     This method uses slightly different input approach since data is augmented on the fly,
     i.e. we need to pass data-generators instead of x_train (and a separate validation datagen, which only rescales imgs)
@@ -100,15 +100,23 @@ def train_test_model_data_augmentation(model, train_datagen, val_datagen, X_test
     """
 
     # Create tensorboard callback for visualisations of training process
-    tensorboard_callback = TensorBoard(log_dir="../logs")
+    tensorboard_callback = TensorBoard(log_dir=f"./logs_{name}")
 
-    # Train model using ordinary fit TODO: Update this to fit_generator to capture model at best before overfitting
+    # Create checkpointer to save best model at each epoch, making sure we capture the best before overfitting occurs
+    checkpointer = ModelCheckpoint(filepath=f"best_{name}.hdf5", save_best_only=True)
+
+    # Train model using  fit_generator
+    epochs = 50
+    steps_per_epoch = len(train_datagen)
     model.fit(train_datagen,
               validation_data=val_datagen,
-              batch_size=100,
-              epochs=20,
-              callbacks=[tensorboard_callback])
+              steps_per_epoch=steps_per_epoch,  # Batch size is 30 from generator
+              #batch_size=100,
+              epochs=epochs,
+              validation_steps=len(val_datagen),
+              callbacks=[tensorboard_callback, checkpointer])
 
+    model.load_weights(f"best_{name}.hdf5")
     accuracy = test_accuracy(model, X_test, Y_test)
 
     print(f"Accuracy on test set for model on augmented data was: {accuracy}")
@@ -119,6 +127,7 @@ def train_test_model_data_augmentation(model, train_datagen, val_datagen, X_test
 
 
 if __name__ == '__main__':
+
     # TODO Test the two different kinds of models with and without both focal loss and data augmentation:
     # Transfer learning
     # Baseline
@@ -126,12 +135,18 @@ if __name__ == '__main__':
 
     x_shape = (100, 100, 3)  # Hardcoded for now
 
-    #model_baseline = gennet_baseline(name="Test01", x_shape=x_shape)
-    model_transfer_learning = gennet_transfer_learning(x_shape)
+    model_baseline = gennet_baseline(x_shape=x_shape)
+    #model_transfer_learning = gennet_transfer_learning(x_shape)
 
     t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)
+
     # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)
-    train_test_model_data_augmentation(model_transfer_learning, t_datagen, val_datagen, X_test, Y_test)
+    train_test_model_data_augmentation("first_baseline_test",
+                                       model_baseline,
+                                       t_datagen,
+                                       val_datagen,
+                                       X_test,
+                                       Y_test)
     # train_test_model(model_baseline,X_train,Y_train, X_test,Y_test)
 
 

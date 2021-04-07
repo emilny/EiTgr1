@@ -49,7 +49,7 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented=False):
     y_data = [data_y[i] for i in index_list]
 
     if not augmented:  # Don't want to normalize when we are using Datagenerators
-        x_data = keras.utils.normalize(x_data)
+        x_data = np.array(x_data) / 255
 
     if training:
         print("Training data saved!")
@@ -61,7 +61,7 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented=False):
         np.save('test_labels', y_data)
 
 
-def create_train_and_validation_gens(batch_size, validation_split):
+def create_train_and_validation_gens(batch_sizes, validation_split):
     """
     Augments images by performing several (=batch_size) augmenting transformations
     Saves augmented images to augmented folder
@@ -75,19 +75,20 @@ def create_train_and_validation_gens(batch_size, validation_split):
 
     train_x, train_y, val_x, val_y = train_x[split_idx:], train_y[split_idx:], train_x[:split_idx], train_y[:split_idx]
 
+    # The augmentation parameters were set based on estimates of what variations may be encountered in real life
     train_datagen = ImageDataGenerator(rescale=1./255,
-                                       zoom_range=0.3,
-                                       rotation_range=15,
-                                       width_shift_range=0.1,
-                                       height_shift_range=0.1,
-                                       shear_range=0.1,
-                                       horizontal_flip=True,
+                                       zoom_range=0.3,  # Most images differ by +/-30% in zoom
+                                       rotation_range=15,  # Unlikely to see more rotated than this
+                                       width_shift_range=0.15,  # Shifts depends on where patient is situated wrt camera
+                                       height_shift_range=0.15,
+                                       shear_range=0.1,  # More than 10% shear is unlikely given images are taken from same angle
+                                       horizontal_flip=False,  # Assuming all images are taken from front
                                        fill_mode='nearest')
 
     validation_datagen = ImageDataGenerator(rescale=1. / 255)
 
-    train_datagen = train_datagen.flow(train_x, train_y, batch_size=batch_size)
-    validation_datagen = validation_datagen.flow(val_x, val_y, batch_size=batch_size)
+    train_datagen = train_datagen.flow(train_x, train_y, batch_size=batch_sizes[0])
+    validation_datagen = validation_datagen.flow(val_x, val_y, batch_size=batch_sizes[1])
 
     return train_datagen, validation_datagen
 
@@ -108,18 +109,18 @@ def load_dataset(train=True):
 
 
 if __name__ == '__main__':
-    create_dataset(percentage_of_data_set=0.1, training=True, augmented=True)
-    train_datagen, val_datagen = create_train_and_validation_gens(1, validation_split=0.1)
+    #create_dataset(percentage_of_data_set=0.1, training=True, augmented=True)
+    train_datagen, val_datagen = create_train_and_validation_gens((2, 1), validation_split=0.1)
 
-    imgtrain = [next(train_datagen) for i in range(0, 5)]
+    imgtrain = [next(train_datagen) for i in range(0, 10)]
     imgval = [next(val_datagen) for i in range(0, 5)]
 
     fig, ax = plt.subplots(1, 10, figsize=(16, 6))
     # print('Labels:', [item[1][0] for item in img])
     for i in range(0, 10):
-        if i < 5:
-            ax[i].imshow(imgval[i][0][0])
-        else:
-            ax[i].imshow(imgtrain[i - 5][0][0])
+        #if i < 5:
+        #    ax[i].imshow(imgval[i][0][0])
+        #else:
+        ax[i].imshow(imgtrain[i][0][0])
 
     plt.show()

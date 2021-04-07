@@ -6,7 +6,7 @@ from keras.callbacks import TensorBoard
 
 
 
-def gennet_baseline(name, x_shape, use_focal=False):
+def gennet_baseline(x_shape, use_focal=False):
     """
     Generates a network with some hard-coded parameters, compiles and returns an untrained model
     :param name: Name of the model
@@ -14,14 +14,14 @@ def gennet_baseline(name, x_shape, use_focal=False):
     :param use_focal: Whether or not to use focal loss as loss function. False: categorical crossentropy
     :return: untrained model
     """
-    model = Sequential(name=name)
+    model = Sequential()
 
     # Create first layer (to receive input)
-    model.add(layer=Conv2D(filters=16, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
+    model.add(layer=Conv2D(filters=32, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
     model.add(layer=MaxPool2D(pool_size=(2, 2)))
 
     # Create additional Convolutional layers
-    filters = [32, 64]
+    filters = [64, 128, 256, 512]
     for f in filters:
         # Adding several conv layers with different filter sizes
         model.add(layer=Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
@@ -29,10 +29,11 @@ def gennet_baseline(name, x_shape, use_focal=False):
         model.add(Dropout(0.5))
     model.add(layer=Flatten())
     model.add(layer=Dense(units=1024, activation="relu"))
-    #model.add(layer=Dense(units=1024, activation="relu")) Might not need double dense layers
+    model.add(layer=Dense(units=1024, activation="relu"))
+    model.add(layer=Dense(units=1024, activation="relu"))
     model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
 
     model.compile(optimizer=optimizers.Adam(),
-                  loss= focal_loss if use_focal else "categorical_crossentropy",
+                  loss=focal_loss if use_focal else "categorical_crossentropy",
                   metrics=['binary_accuracy'])
     return model
