@@ -231,7 +231,7 @@ def main(param_num=1):
     model = model_gen(x_shape=x_shape, use_focal=use_focal)  # Obtain compiled untrained model
 
     data_getter = get_generators if augment else get_data  # Decide data getter
-    x_train, y_train, x_test, y_test = data_getter(percentage=1)  # Obtain 100% of data
+    x_train, y_train, x_test, y_test = data_getter(percentage=None)  # Obtain 100% of data
 
     run_ = train_test_model_data_augmentation if augment else train_test_model  # Decide run function
 
@@ -242,45 +242,6 @@ def main(param_num=1):
 if __name__ == '__main__':
     main(1)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    model = gennet_baseline(x_shape=x_shape, use_focal=False)
-    #model_transfer_learning = gennet_transfer_learning(x_shape)
-
-    #t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)  # FOR DATA AUGMENTATION
-    X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
-
-    #train_test_model_data_augmentation("baseline_no_augment",
-    #                                   model_baseline,
-    #                                   t_datagen,
-    #                                   val_datagen,
-    #                                   X_test,
-    #                                   Y_test)
-    #train_test_model("baseline_no_augment", model_baseline,X_train,Y_train, X_test,Y_test)
-    model.load_weights(f"./models/best_baseline_no_augment2.hdf5")
-    accuracy = test_accuracy(model, X_test, Y_test)
-    fpr, fnr = test_false_P_N(model, X_test, Y_test)
-
-    print(f"Accuracy on test set for model on augmented data was: {accuracy*100}%")
-    print(f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%")
-    print(f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%")
 
 # Test accuracy for hele datasettet:
 # 0.826 for focal med gamma = 2
