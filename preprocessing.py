@@ -48,7 +48,7 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented=False):
     x_data = [data_x[i] for i in index_list]
     y_data = [data_y[i] for i in index_list]
 
-    if not augmented:  # Don't want to normalize when we are using Datagenerators
+    if not augmented or not training:  # Don't want to normalize when we are using Datagenerators
         x_data = np.array(x_data) / 255
 
     if training:
@@ -69,7 +69,6 @@ def create_train_and_validation_gens(batch_sizes, validation_split):
     :return: Two data generators, one for train and one for validation, validation is not augmented
     """
     train_x, train_y = load_dataset(train=True)  # Load full train set
-
     # Perform validation split
     split_idx = int(len(train_x) * validation_split)
 

@@ -75,12 +75,13 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     tensorboard_callback = TensorBoard(log_dir=f"./logs_{name}")
 
     # Create checkpointer to save best model at each epoch, making sure we capture the best before overfitting occurs
-    checkpointer = ModelCheckpoint(filepath=f"best_{name}.hdf5", save_best_only=True)
+    checkpointer = ModelCheckpoint(filepath=f"../models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using ordinary fit
     model.fit(x=X_train, y=Y_train, batch_size=30, epochs=50, validation_split=validation_split,
               callbacks=[tensorboard_callback, checkpointer])
 
+    model.load_weights(f"best_{name}.hdf5")
     accuracy = test_accuracy(model, X_test, Y_test)
 
     print(f"Accuracy on test set for the baseline model was: {accuracy*100}%")
@@ -103,7 +104,7 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
     tensorboard_callback = TensorBoard(log_dir=f"./logs_{name}")
 
     # Create checkpointer to save best model at each epoch, making sure we capture the best before overfitting occurs
-    checkpointer = ModelCheckpoint(filepath=f"best_{name}.hdf5", save_best_only=True)
+    checkpointer = ModelCheckpoint(filepath=f"../models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using  fit_generator
     epochs = 50
@@ -139,109 +140,25 @@ if __name__ == '__main__':
     #model_transfer_learning = gennet_transfer_learning(x_shape)
 
     t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)
+    preprocessing.create_dataset(1, training=False)
+    X_test, Y_test = preprocessing.load_dataset(train=False)
 
+    model_baseline.load_weights(f"best_first_baseline_test.hdf5")
+    accuracy = test_accuracy(model_baseline, X_test, Y_test)
+    print(accuracy)
     # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)
-    train_test_model_data_augmentation("first_baseline_test",
-                                       model_baseline,
-                                       t_datagen,
-                                       val_datagen,
-                                       X_test,
-                                       Y_test)
+    #train_test_model_data_augmentation("first_baseline_test",
+    #                                   model_baseline,
+    #                                   t_datagen,
+    #                                   val_datagen,
+    #                                   X_test,
+    #                                  Y_test)
     # train_test_model(model_baseline,X_train,Y_train, X_test,Y_test)
 
-
-
-
-
-
-
-
-"""    
-
-#preprocessing.create_dataset(1, training=False)
-
-MODEL_NAME = 'covid_test-{}-{}.model'.format(LR, '2conv-basic')
-
-#model = load_model(filepath=f"models/{MODEL_NAME}")
-
-
-
-
-
-#X, Y = X[0:int(len(X)*0.1)], Y[0:int(len(X)*0.1)]
-
-x_shape = X[0].shape
-input_tens = Input(shape=x_shape)
-
-#model = Sequential()
-#pre_trained = vgg16.VGG16(include_top=False, input_tensor=input_tens, pooling="max")
-
-
-
-
-"""
-"""
-# Create first layer (to receive input)
-model.add(layer=Conv2D(filters=16, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
-model.add(layer=MaxPool2D(pool_size=(2, 2)))
-
-# Create additional Convolutional layers
-filters = [32, 64]
-for f in filters:
-    # Adding several conv layers with different filter sizes
-    model.add(layer=Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
-    model.add(layer=MaxPool2D(pool_size=(2, 2)))
-    model.add(Dropout(0.5)
-"""
-"""
-
-
-#model.add(layer=Flatten())
-#model.add(layer=Dense(units=1024, activation="relu"))
-#model.add(layer=Dense(units=1024, activation="relu"))
-#model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
-
-model.compile(optimizer=optimizers.Adam(),
-              loss="categorical_crossentropy",
-              metrics=['binary_accuracy',
-                       metrics.FalsePositives(),
-                       metrics.FalseNegatives(),
-                       metrics.TruePositives(),
-                       metrics.TrueNegatives()])
-
-if os.path.exists(f"models/{MODEL_NAME}"):
-    pass
-    # model.load_weights(filepath=f"models/{MODEL_NAME}")
-    # print('model loaded!')
-
-#tensorboard_callback = TensorBoard(log_dir="./logs")
-
-#checkpointer = ModelCheckpoint(filepath='/tmp/checkpoint',
-#                               mode='max', verbose=2, save_best_only=True)
-
-#model.fit(x = X, y = Y, batch_size=100, epochs=20, validation_split=0.1,
-#          callbacks=[tensorboard_callback])
-
-history = model.fit_generator(train_datagen, #steps_per_epoch=len(X)//20,
-                    validation_data=val_datagen,
-                    #validation_steps=len(X_val)//20,
-                    epochs=20,
-                    verbose=2)
-
-#model.save_weights(filepath=f"models/{MODEL_NAME}")
-
-test_x, test_y = preprocessing.load_dataset(train=False)
-
-
-# testing:
-
-
-
-test_accuracy(model, test_x)
 
 # Test accuracy for hele datasettet:
 # 0.826 for focal med gamma = 2
 # 0.821 for crossentropy
 # 0.821 for focal loss med gamma = 1
 # 0.814 for focal loss med gamma = 3
-"""
+# 0.854 for baseline med data augmentation

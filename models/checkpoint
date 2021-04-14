@@ -1,2 +1,0 @@
-model_checkpoint_path: "covid_test-0.01-2conv-basic.model"
-all_model_checkpoint_paths: "covid_test-0.01-2conv-basic.model"
