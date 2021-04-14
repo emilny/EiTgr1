@@ -131,10 +131,12 @@ if __name__ == '__main__':
 
     # TODO Test the two different kinds of models with and without both focal loss and data augmentation:
     # Transfer learning
-    # Baseline
-    # TODO Find out about suitable parameters and make an educated guess
+    # TODO: Finn ut om 1: flere dense på bunnen er bra? 2: Færre trainable=False på slutten?
+    #   0.XXX med/uten focal med/uten data augmentation
+    # Baseline (Satt med parametere fra artikkel)
+    #   0.XXX med/uten focal med/uten data augmentation
 
-    x_shape = (100, 100, 3)  # Hardcoded for now
+    x_shape = (100, 100, 3)  # Hardcoded for now (Argument: Større tar fette lang tid å kjøre)
 
     model_baseline = gennet_baseline(x_shape=x_shape)
     #model_transfer_learning = gennet_transfer_learning(x_shape)
