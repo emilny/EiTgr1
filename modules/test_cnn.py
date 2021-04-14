@@ -25,7 +25,7 @@ def test_accuracy(model, test_x, test_y):
             sum += 1
     return sum/len(predictions)
 
-def test_false_P_N(predictions, test_x, test_y, model=None):
+def test_false_P_N(model, test_x, test_y):
     """
     Function for testing a finished model on the final test set,
     focus on False Covid predictions, either falsely positive or falsely negative
@@ -34,8 +34,8 @@ def test_false_P_N(predictions, test_x, test_y, model=None):
     :param test_y: labels for featuresets
     :return: False positives, False negatives as percentage for Covid cases: FPR = FP/FP+TN, FNR= FN/FN+TP
     """
-    if model is not None:
-        predictions = model.predict(test_x)
+
+    predictions = model.predict(test_x)
     fp = 0
     fn = 0
     tn = 0
@@ -122,9 +122,12 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
 
     model.load_weights(f"./models/best_{name}.hdf5")
     accuracy = test_accuracy(model, X_test, Y_test)
+    fpr, fnr = test_false_P_N(model, X_test, Y_test)
 
-    print(f"Accuracy on test set for the baseline model was: {accuracy*100}%")
-    # Does not save model at this point, this should be implemented along with fit_generator and checkpointer
+    print(f"Accuracy on test set for model on augmented data was: {accuracy*100}%")
+    print(f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%")
+    print(f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%")
+
 
 
 def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, X_test, Y_test):
@@ -158,9 +161,11 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
 
     model.load_weights(f"./models/best_{name}.hdf5")
     accuracy = test_accuracy(model, X_test, Y_test)
+    fpr, fnr = test_false_P_N(model, X_test, Y_test)
 
-    print(f"Accuracy on test set for model on augmented data was: {accuracy}")
-    # Does not save model at this point, this should be implemented along with fit_generator and checkpointer
+    print(f"Accuracy on test set for model on augmented data was: {accuracy*100}%")
+    print(f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%")
+    print(f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%")
 
 
 
@@ -179,11 +184,6 @@ if __name__ == '__main__':
 
     model_baseline = gennet_baseline(x_shape=x_shape)
     #model_transfer_learning = gennet_transfer_learning(x_shape)
-
-
-
-
-
 
     t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)  # FOR DATA AUGMENTATION
      # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
