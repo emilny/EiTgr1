@@ -25,7 +25,7 @@ def gennet_baseline(x_shape, use_focal=False):
         # Adding several conv layers with different filter sizes
         model.add(layer=Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
         model.add(layer=MaxPool2D(pool_size=(2, 2)))
-        model.add(Dropout(0.5)) # TODO: Kanskje 50% er litt i overkant?
+        model.add(Dropout(0.5))  # TODO: Kanskje 50% er litt i overkant?
     model.add(layer=Flatten())
     model.add(layer=Dense(units=1024, activation="relu"))
     model.add(layer=Dense(units=1024, activation="relu"))
@@ -33,6 +33,6 @@ def gennet_baseline(x_shape, use_focal=False):
     model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
 
     model.compile(optimizer=optimizers.Adam(),
-                  loss=focal_loss if use_focal else "categorical_crossentropy",
+                  loss=focal_loss() if use_focal else "categorical_crossentropy",
                   metrics=['binary_accuracy'])
     return model

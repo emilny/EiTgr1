@@ -149,7 +149,7 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
     checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using  fit_generator
-    epochs = 50
+    epochs = 30
     steps_per_epoch = len(train_datagen)
     model.fit(train_datagen,
               validation_data=val_datagen,
@@ -182,13 +182,14 @@ if __name__ == '__main__':
 
     x_shape = (100, 100, 3)  # Hardcoded for now (Argument: Større tar fette lang tid å kjøre)
 
-    model_baseline = gennet_baseline(x_shape=x_shape, use_focal=False)
+    model_baseline = gennet_baseline(x_shape=x_shape, use_focal=True)
     #model_transfer_learning = gennet_transfer_learning(x_shape)
 
+    #preprocessing.create_dataset(1, training=False, augmented=True)
     t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)  # FOR DATA AUGMENTATION
-     # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
+    # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
 
-    train_test_model_data_augmentation("baseline_no_augment",
+    train_test_model_data_augmentation("baseline_augment_focal_loss",
                                        model_baseline,
                                        t_datagen,
                                        val_datagen,
