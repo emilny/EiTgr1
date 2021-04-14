@@ -18,14 +18,53 @@ def test_accuracy(model, test_x, test_y):
     :return: binary accuracy score as Correct/Correct+False
     """
     predictions = model.predict(test_x)
-    i = 0
     sum = 0
-    for p in predictions:
+    for i, p in enumerate(predictions):
         diff = np.argmax(p) - np.argmax(test_y[i])
         if diff == 0:
             sum += 1
-        i += 1
-    return sum/i
+    return sum/len(predictions)
+
+def test_false_P_N(predictions, test_x, test_y, model=None):
+    """
+    Function for testing a finished model on the final test set,
+    focus on False Covid predictions, either falsely positive or falsely negative
+    :param model: Trained model
+    :param test_x: featureset
+    :param test_y: labels for featuresets
+    :return: False positives, False negatives as percentage for Covid cases: FPR = FP/FP+TN, FNR= FN/FN+TP
+    """
+    if model is not None:
+        predictions = model.predict(test_x)
+    fp = 0
+    fn = 0
+    tn = 0
+    tp = 0
+    for i, p in enumerate(predictions):
+        covid_predicted = np.argmax(p) == 0
+        actually_covid = np.argmax(test_y[i]) == 0
+        if covid_predicted:  # Positive
+            if actually_covid:  # True
+                tp += 1
+            else:  # False
+                fp += 1
+        else:  # Negative
+            if actually_covid:  # False
+                fn += 1
+            else:  # True:
+                tn += 1
+    assert fp + fn + tp + tn == len(predictions)
+
+    # Avoid zero-division in next segment
+    if fp + tn == 0:
+        tn = 1
+    if fn + tp == 0:
+        tp = 1
+
+    fpr = fp/(fp+tn)
+    fnr = fn/(fn+tp)
+
+    return fpr, fnr
 
 
 def get_generators(percentage=None):
@@ -75,13 +114,13 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     tensorboard_callback = TensorBoard(log_dir=f"./logs_{name}")
 
     # Create checkpointer to save best model at each epoch, making sure we capture the best before overfitting occurs
-    checkpointer = ModelCheckpoint(filepath=f"../models/best_{name}.hdf5", save_best_only=True)
+    checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using ordinary fit
     model.fit(x=X_train, y=Y_train, batch_size=30, epochs=50, validation_split=validation_split,
               callbacks=[tensorboard_callback, checkpointer])
 
-    model.load_weights(f"best_{name}.hdf5")
+    model.load_weights(f"./models/best_{name}.hdf5")
     accuracy = test_accuracy(model, X_test, Y_test)
 
     print(f"Accuracy on test set for the baseline model was: {accuracy*100}%")
@@ -104,7 +143,7 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
     tensorboard_callback = TensorBoard(log_dir=f"./logs_{name}")
 
     # Create checkpointer to save best model at each epoch, making sure we capture the best before overfitting occurs
-    checkpointer = ModelCheckpoint(filepath=f"../models/best_{name}.hdf5", save_best_only=True)
+    checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using  fit_generator
     epochs = 50
@@ -117,7 +156,7 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
               validation_steps=len(val_datagen),
               callbacks=[tensorboard_callback, checkpointer])
 
-    model.load_weights(f"best_{name}.hdf5")
+    model.load_weights(f"./models/best_{name}.hdf5")
     accuracy = test_accuracy(model, X_test, Y_test)
 
     print(f"Accuracy on test set for model on augmented data was: {accuracy}")
@@ -141,20 +180,22 @@ if __name__ == '__main__':
     model_baseline = gennet_baseline(x_shape=x_shape)
     #model_transfer_learning = gennet_transfer_learning(x_shape)
 
-    t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)
-    preprocessing.create_dataset(1, training=False)
+
+
+
+
+
+    t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)  # FOR DATA AUGMENTATION
+     # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
     X_test, Y_test = preprocessing.load_dataset(train=False)
 
-    model_baseline.load_weights(f"best_first_baseline_test.hdf5")
-    accuracy = test_accuracy(model_baseline, X_test, Y_test)
-    print(accuracy)
-    # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)
-    #train_test_model_data_augmentation("first_baseline_test",
-    #                                   model_baseline,
-    #                                   t_datagen,
-    #                                   val_datagen,
-    #                                   X_test,
-    #                                  Y_test)
+
+    train_test_model_data_augmentation("first_baseline_test",
+                                       model_baseline,
+                                       t_datagen,
+                                       val_datagen,
+                                       X_test,
+                                       Y_test)
     # train_test_model(model_baseline,X_train,Y_train, X_test,Y_test)
 
 

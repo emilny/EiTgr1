@@ -20,12 +20,14 @@ def gennet_transfer_learning(x_shape, use_focal=False):
 
     # Set pretrained layers to non-trainable
     for layer in pre_trained.layers:
+        # TODO sjekk ut om siste kanskje ikke trengs å skrus av?
         layer.trainable = False
 
     # Add new classifier layers, specific to the task
     flatten_layer = Flatten()(pre_trained.layers[-1].output)
-    classify_layer = Dense(1024, activation='relu')(flatten_layer)
-    output_layer = Dense(3, activation='softmax')(classify_layer)
+    classify_layer1 = Dense(1024, activation='relu')(flatten_layer)
+    classify_layer2 = Dense(1024, activation='relu')(classify_layer1)
+    output_layer = Dense(3, activation='softmax')(classify_layer2)
 
     # Define new model and build on pretrained
     model = Model(inputs=pre_trained.inputs, outputs=output_layer)
