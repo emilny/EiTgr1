@@ -82,7 +82,7 @@ def get_generators(percentage=None):
     X_test, Y_test = preprocessing.load_dataset(train=False)
     return train_datagen, val_datagen, X_test, Y_test
 
-def prep_train_data(percentage=None):
+def get_data(percentage=None):
     """
     Create numpy arrays from data sets.
     NOTE: This has to be done differently for data augmentation model, use get_generators instead
@@ -98,7 +98,7 @@ def prep_train_data(percentage=None):
     return X_train, Y_train, X_test, Y_test
 
 
-def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_split=0.1):
+def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_split=0.2, epochs=50):
     """
     Train a model that has already been compiled, on the given data set, and then test it on the test set.
     :param model: A precompiled model, untrained (or pre-trained as VGG16 etc)
@@ -117,20 +117,25 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using ordinary fit
-    model.fit(x=X_train, y=Y_train, batch_size=30, epochs=50, validation_split=validation_split,
+    model.fit(x=X_train, y=Y_train, batch_size=30, epochs=epochs, validation_split=validation_split,
               callbacks=[tensorboard_callback, checkpointer])
 
     model.load_weights(f"./models/best_{name}.hdf5")
     accuracy = test_accuracy(model, X_test, Y_test)
     fpr, fnr = test_false_P_N(model, X_test, Y_test)
 
-    print(f"Accuracy on test set for model on augmented data was: {accuracy*100}%")
-    print(f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%")
-    print(f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%")
+    result = ""
+    result += f"Accuracy on test set for model on augmented data was: {accuracy*100}%\n"
+    result += f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%\n"
+    result += f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%"
+    with open(f"./results/{name}",'w+') as f:
+        f.write(result)
+
+    print(result)
 
 
 
-def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, X_test, Y_test):
+def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, X_test, Y_test, epochs):
     """
     This method uses slightly different input approach since data is augmented on the fly,
     i.e. we need to pass data-generators instead of x_train (and a separate validation datagen, which only rescales imgs)
@@ -149,7 +154,6 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
     checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using  fit_generator
-    epochs = 30
     steps_per_epoch = len(train_datagen)
     model.fit(train_datagen,
               validation_data=val_datagen,
@@ -163,39 +167,98 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
     accuracy = test_accuracy(model, X_test, Y_test)
     fpr, fnr = test_false_P_N(model, X_test, Y_test)
 
-    print(f"Accuracy on test set for model on augmented data was: {accuracy*100}%")
-    print(f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%")
-    print(f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%")
+    result = ""
+    result += f"Accuracy on test set for model on augmented data was: {accuracy*100}%\n"
+    result += f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%\n"
+    result += f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%"
+    with open(f"./results/{name}",'w+') as f:
+        f.write(result)
+
+    print(result)
 
 
 
+RUN_PARAM_DICT = {1: {"name": "baseline",
+                      "use_focal": False,
+                      "augment_data": False},
+                  2: {"name": "baseline_augment",
+                      "use_focal": False,
+                      "augment_data": True},
+                  3: {"name": "baseline_focal",
+                      "use_focal": True,
+                      "augment_data": False},
+                  4: {"name": "baseline_augment_focal",
+                      "use_focal": True,
+                      "augment_data": True},
+                  5: {"name": "transfer_learning",
+                      "use_focal": False,
+                      "augment_data": False},
+                  6: {"name": "transfer_learning_augment",
+                      "use_focal": False,
+                      "augment_data": True},
+                  7: {"name": "transfer_learning_focal",
+                      "use_focal": True,
+                      "augment_data": False},
+                  8: {"name": "transfer_learning_augment_focal",
+                      "use_focal": True,
+                      "augment_data": True}}
+
+
+
+def main(param_num=1):
+
+    """
+    Her varieres følgende:
+                            Modell :  Transfer learning / Baseline
+                            Trening:  Data augmentation / Vanlig dataset
+                            Loss   :  Focal loss        / Categorical crossentropy
+    """
+
+    x_shape = (100, 100, 3)  # Hardcoded for now (Argument: Større tar fette lang tid å kjøre)
+    run_params = RUN_PARAM_DICT[param_num]  # Gather params for this run
+
+    model_name = run_params["name"]
+    baseline = model_name[:8] == "baseline"
+
+    use_focal = run_params["use_focal"]
+    augment = run_params["augment_data"]
+
+    model_gen = gennet_baseline if baseline else gennet_transfer_learning  # Decide model getter
+    model = model_gen(x_shape=x_shape, use_focal=use_focal)  # Obtain compiled untrained model
+
+    data_getter = get_generators if augment else get_data  # Decide data getter
+    x_train, y_train, x_test, y_test = data_getter(percentage=1)  # Obtain 100% of data
+
+    run_ = train_test_model_data_augmentation if augment else train_test_model  # Decide run function
+
+    # Run it
+    run_(model_name, model, x_train, y_train, x_test, y_test, epochs=50)
 
 
 if __name__ == '__main__':
+    main(1)
 
-    # TODO Test the two different kinds of models with and without both focal loss and data augmentation:
-    # Transfer learning
-    # TODO: Finn ut om 1: flere dense på bunnen er bra? 2: Færre trainable=False på slutten?
-    #   0.XXX med/uten focal med/uten data augmentation
-    # Baseline (Satt med parametere fra artikkel)
-    #   0.XXX med/uten focal med/uten data augmentation
 
-    x_shape = (100, 100, 3)  # Hardcoded for now (Argument: Større tar fette lang tid å kjøre)
 
-    model_baseline = gennet_baseline(x_shape=x_shape, use_focal=True)
-    #model_transfer_learning = gennet_transfer_learning(x_shape)
 
-    #preprocessing.create_dataset(1, training=False, augmented=True)
-    t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)  # FOR DATA AUGMENTATION
-    # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
 
-    train_test_model_data_augmentation("baseline_augment_focal_loss",
-                                       model_baseline,
-                                       t_datagen,
-                                       val_datagen,
-                                       X_test,
-                                       Y_test)
-    # train_test_model(model_baseline,X_train,Y_train, X_test,Y_test)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 # Test accuracy for hele datasettet:

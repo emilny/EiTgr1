@@ -1,0 +1,3 @@
+Accuracy on test set for model on augmented data was: 93.16770186335404%
+(COVID) False positive rate on test set for model on augmented data was: 0.08532423208191127%
+(COVID) False negative rate on test set for model on augmented data was: 12.931034482758621%

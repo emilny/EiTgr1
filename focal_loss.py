@@ -4,16 +4,19 @@ from tensorflow.python.keras import backend as K
 """
 
 alpha=1, gamma=2.0:
-Accuracy on test set for model on augmented data was: 24.611801242236027%
-(COVID) False positive rate on test set for model on augmented data was: 0.0%
-(COVID) False negative rate on test set for model on augmented data was: 100.0%
+Accuracy on test set for model on augmented data was: 72.04968944099379%
+(COVID) False positive rate on test set for model on augmented data was: 0.08532423208191127%
+(COVID) False negative rate on test set for model on augmented data was: 42.241379310344826%
+
 
 
 alpha=0.25, gamma=2.0:
-
+Accuracy on test set for model on augmented data was: 72.04968944099379%
+(COVID) False positive rate on test set for model on augmented data was: 0.3412969283276451%
+(COVID) False negative rate on test set for model on augmented data was: 37.06896551724138%
 """
 
-def focal_loss(gamma=2., alpha=1.):
+def focal_loss(gamma=2., alpha=0.25):
 
     gamma = float(gamma)
     alpha = float(alpha)
@@ -50,20 +53,5 @@ def focal_loss(gamma=2., alpha=1.):
         return tf.reduce_mean(reduced_fl)
     return focal_loss_fixed
 
-def focal_loss_old(alpha=0.25, gamma=2.0):
-    def focal_crossentropy(y_true, y_pred):
-        bce = K.binary_crossentropy(y_true, y_pred)
 
-        y_pred = K.clip(y_pred, K.epsilon(), 1.- K.epsilon())
-        p_t = (y_true*y_pred) + ((1-y_true)*(1-y_pred))
-
-        alpha_factor = 1
-        modulating_factor = 1
-
-        alpha_factor = y_true*alpha + ((1-alpha)*(1-y_true))
-        modulating_factor = K.pow((1-p_t), gamma)
-
-        # compute the final loss and return
-        return K.mean(alpha_factor*modulating_factor*bce, axis=-1)
-    return focal_crossentropy
 
