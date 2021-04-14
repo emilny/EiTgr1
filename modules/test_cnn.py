@@ -182,15 +182,13 @@ if __name__ == '__main__':
 
     x_shape = (100, 100, 3)  # Hardcoded for now (Argument: Større tar fette lang tid å kjøre)
 
-    model_baseline = gennet_baseline(x_shape=x_shape)
+    model_baseline = gennet_baseline(x_shape=x_shape, use_focal=False)
     #model_transfer_learning = gennet_transfer_learning(x_shape)
 
     t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)  # FOR DATA AUGMENTATION
      # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
-    X_test, Y_test = preprocessing.load_dataset(train=False)
 
-
-    train_test_model_data_augmentation("first_baseline_test",
+    train_test_model_data_augmentation("baseline_no_augment",
                                        model_baseline,
                                        t_datagen,
                                        val_datagen,

@@ -16,16 +16,16 @@ def gennet_baseline(x_shape, use_focal=False):
     model = Sequential()
 
     # Create first layer (to receive input)
-    model.add(layer=Conv2D(filters=64, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
+    model.add(layer=Conv2D(filters=32, kernel_size=(3, 3), activation="relu", input_shape=x_shape))
     model.add(layer=MaxPool2D(pool_size=(2, 2)))
 
     # Create additional Convolutional layers
-    filters = [128, 256, 256, 512, 512, 512, 512]
+    filters = [64, 128, 256, 512]
     for f in filters:
         # Adding several conv layers with different filter sizes
         model.add(layer=Conv2D(filters=f, kernel_size=(3, 3), activation="relu"))
         model.add(layer=MaxPool2D(pool_size=(2, 2)))
-        model.add(Dropout(0.5))  # TODO: Kanskje 50% er litt i overkant?
+        model.add(Dropout(0.5)) # TODO: Kanskje 50% er litt i overkant?
     model.add(layer=Flatten())
     model.add(layer=Dense(units=1024, activation="relu"))
     model.add(layer=Dense(units=1024, activation="relu"))
@@ -34,5 +34,5 @@ def gennet_baseline(x_shape, use_focal=False):
 
     model.compile(optimizer=optimizers.Adam(),
                   loss=focal_loss if use_focal else "categorical_crossentropy",
-                  metrics=['binary_accuracy', "false_positives", "false_negatives"])
+                  metrics=['binary_accuracy'])
     return model
