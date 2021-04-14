@@ -32,8 +32,8 @@ def gennet_transfer_learning(x_shape, use_focal=False):
     model = Model(inputs=pre_trained.inputs, outputs=output_layer)
 
     model.compile(optimizer=optimizers.Adam(),
-                  loss=focal_loss if use_focal else "categorical_crossentropy",
-                  metrics=['binary_accuracy'])
+                  loss=focal_loss(alpha=1.0, gamma=2.0) if use_focal else "categorical_crossentropy",
+                  metrics=['binary_accuracy', 'categorical_accuracy'])
 
     # Summarize
     #model.summary()

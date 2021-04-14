@@ -5,7 +5,6 @@ from focal_loss import focal_loss
 from keras.callbacks import TensorBoard
 
 
-
 def gennet_baseline(x_shape, use_focal=False):
     """
     Generates a network with some hard-coded parameters, compiles and returns an untrained model
@@ -33,6 +32,6 @@ def gennet_baseline(x_shape, use_focal=False):
     model.add(layer=Dense(units=3, activation="softmax"))  # Output is a 3-vector
 
     model.compile(optimizer=optimizers.Adam(),
-                  loss=focal_loss if use_focal else "categorical_crossentropy",
-                  metrics=['binary_accuracy'])
+                  loss=focal_loss(alpha=1.0, gamma=2.0) if use_focal else "categorical_crossentropy",
+                  metrics=['binary_accuracy', 'categorical_accuracy'])
     return model

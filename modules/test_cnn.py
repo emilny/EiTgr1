@@ -4,6 +4,10 @@ Perform comparisons and choose the network configuration that yields the best re
 """
 import numpy as np
 from keras.callbacks import TensorBoard, ModelCheckpoint
+import os,sys,inspect
+current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
+parent_dir = os.path.dirname(current_dir)
+sys.path.insert(0, parent_dir)
 import preprocessing
 from modules.transferlearning import gennet_transfer_learning
 from modules.baseline import gennet_baseline
@@ -117,7 +121,7 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using ordinary fit
-    model.fit(x=X_train, y=Y_train, batch_size=30, epochs=50, validation_split=validation_split,
+    model.fit(x=X_train, y=Y_train, batch_size=30, epochs=30, validation_split=validation_split,
               callbacks=[tensorboard_callback, checkpointer])
 
     model.load_weights(f"./models/best_{name}.hdf5")
@@ -182,20 +186,26 @@ if __name__ == '__main__':
 
     x_shape = (100, 100, 3)  # Hardcoded for now (Argument: Større tar fette lang tid å kjøre)
 
-    model_baseline = gennet_baseline(x_shape=x_shape, use_focal=False)
+    model = gennet_baseline(x_shape=x_shape, use_focal=False)
     #model_transfer_learning = gennet_transfer_learning(x_shape)
 
-    t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)  # FOR DATA AUGMENTATION
-     # X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
+    #t_datagen, val_datagen, X_test, Y_test = get_generators(percentage=None)  # FOR DATA AUGMENTATION
+    X_train, Y_train, X_test, Y_test = prep_train_data(percentage=None)  # FOR NORMAL DATA TRAINING
 
-    train_test_model_data_augmentation("baseline_no_augment",
-                                       model_baseline,
-                                       t_datagen,
-                                       val_datagen,
-                                       X_test,
-                                       Y_test)
-    # train_test_model(model_baseline,X_train,Y_train, X_test,Y_test)
+    #train_test_model_data_augmentation("baseline_no_augment",
+    #                                   model_baseline,
+    #                                   t_datagen,
+    #                                   val_datagen,
+    #                                   X_test,
+    #                                   Y_test)
+    #train_test_model("baseline_no_augment", model_baseline,X_train,Y_train, X_test,Y_test)
+    model.load_weights(f"./models/best_baseline_no_augment2.hdf5")
+    accuracy = test_accuracy(model, X_test, Y_test)
+    fpr, fnr = test_false_P_N(model, X_test, Y_test)
 
+    print(f"Accuracy on test set for model on augmented data was: {accuracy*100}%")
+    print(f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%")
+    print(f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%")
 
 # Test accuracy for hele datasettet:
 # 0.826 for focal med gamma = 2
