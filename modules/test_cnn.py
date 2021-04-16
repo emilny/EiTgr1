@@ -5,9 +5,6 @@ Perform comparisons and choose the network configuration that yields the best re
 import numpy as np
 from keras.callbacks import TensorBoard, ModelCheckpoint
 import os,sys,inspect
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
 import preprocessing
 from modules.transferlearning import gennet_transfer_learning
 from modules.baseline import gennet_baseline
@@ -231,7 +228,7 @@ def main(param_num=1):
     model = model_gen(x_shape=x_shape, use_focal=use_focal)  # Obtain compiled untrained model
 
     data_getter = get_generators if augment else get_data  # Decide data getter
-    x_train, y_train, x_test, y_test = data_getter(percentage=None)  # Obtain 100% of data
+    x_train, y_train, x_test, y_test = data_getter(percentage=1)  # Obtain 100% of data
 
     run_ = train_test_model_data_augmentation if augment else train_test_model  # Decide run function
 
