@@ -239,28 +239,6 @@ if __name__ == '__main__':
     main(1)
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 # Test accuracy for hele datasettet:
 # 0.826 for focal med gamma = 2
 # 0.821 for crossentropy
