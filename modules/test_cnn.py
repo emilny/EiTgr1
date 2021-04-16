@@ -4,7 +4,6 @@ Perform comparisons and choose the network configuration that yields the best re
 """
 import numpy as np
 from keras.callbacks import TensorBoard, ModelCheckpoint
-import os,sys,inspect
 import preprocessing
 from modules.transferlearning import gennet_transfer_learning
 from modules.baseline import gennet_baseline
