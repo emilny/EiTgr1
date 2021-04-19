@@ -231,7 +231,7 @@ def main(param_num=1):
     model = model_gen(x_shape=x_shape, use_focal=use_focal)  # Obtain compiled untrained model
 
     data_getter = get_generators if augment else get_data  # Decide data getter
-    x_train, y_train, x_test, y_test = data_getter(percentage=None)  # Obtain 100% of data
+    x_train, y_train, x_test, y_test = data_getter(percentage=1)  # Obtain 100% of data
 
     run_ = train_test_model_data_augmentation if augment else train_test_model  # Decide run function
 
@@ -240,7 +240,7 @@ def main(param_num=1):
 
 
 if __name__ == '__main__':
-    main(1)
+    main(5)
 
 
 # Test accuracy for hele datasettet:
