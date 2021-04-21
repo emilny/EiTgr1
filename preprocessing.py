@@ -8,8 +8,8 @@ from tqdm import tqdm
 from tensorflow import keras
 from keras.preprocessing.image import ImageDataGenerator
 
-TRAINING_DATA_DIR = "/Users/emilny/Downloads/Data/train/"
-TEST_DATA_DIR = "/Users/emilny/Downloads/Data/test/"
+TRAINING_DATA_DIR = r"C:\Users\eivol\OneDrive\Dokumenter\GitHub/Data/train/"
+TEST_DATA_DIR = r"C:\Users\eivol\OneDrive\Dokumenter\GitHub/Data/test/"
 
 CATEGORIES = ["COVID19", "NORMAL", "PNEUMONIA"]
 
@@ -123,3 +123,4 @@ if __name__ == '__main__':
         ax[i].imshow(imgtrain[i][0][0])
 
     plt.show()
+

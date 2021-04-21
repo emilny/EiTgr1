@@ -128,6 +128,7 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     result += f"Accuracy on test set for model on augmented data was: {accuracy*100}%\n"
     result += f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%\n"
     result += f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%"
+    print(result)
     with open(f"./results/{name}",'w+') as f:
         f.write(result)
 
@@ -171,10 +172,11 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
     result += f"Accuracy on test set for model on augmented data was: {accuracy*100}%\n"
     result += f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%\n"
     result += f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%"
+    print(result)
     with open(f"./results/{name}",'w+') as f:
         f.write(result)
 
-    print(result)
+
 
 
 
@@ -236,7 +238,7 @@ def main(param_num=1):
 
 
 if __name__ == '__main__':
-    main(8)
+    main(6)
 
 
 # Test accuracy for hele datasettet:
