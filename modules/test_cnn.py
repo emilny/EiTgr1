@@ -236,7 +236,7 @@ def main(param_num=1):
 
 
 if __name__ == '__main__':
-    main(1)
+    main(8)
 
 
 # Test accuracy for hele datasettet:

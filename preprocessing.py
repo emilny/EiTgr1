@@ -86,7 +86,7 @@ def create_train_and_validation_gens(batch_sizes, validation_split):
 
     validation_datagen = ImageDataGenerator(rescale=1. / 255)
 
-    train_datagen = train_datagen.flow(train_x, train_y, batch_size=batch_sizes[0])
+    train_datagen = train_datagen.flow(train_x[0:1], train_y[0:1], batch_size=batch_sizes[0])
     validation_datagen = validation_datagen.flow(val_x, val_y, batch_size=batch_sizes[1])
 
     return train_datagen, validation_datagen
@@ -111,12 +111,12 @@ if __name__ == '__main__':
     #create_dataset(percentage_of_data_set=0.1, training=True, augmented=True)
     train_datagen, val_datagen = create_train_and_validation_gens((2, 1), validation_split=0.1)
 
-    imgtrain = [next(train_datagen) for i in range(0, 10)]
+    imgtrain = [next(train_datagen) for i in range(0, 5)]
     imgval = [next(val_datagen) for i in range(0, 5)]
 
-    fig, ax = plt.subplots(1, 10, figsize=(16, 6))
+    fig, ax = plt.subplots(1, 5, figsize=(16, 6))
     # print('Labels:', [item[1][0] for item in img])
-    for i in range(0, 10):
+    for i in range(0, 5):
         #if i < 5:
         #    ax[i].imshow(imgval[i][0][0])
         #else:
