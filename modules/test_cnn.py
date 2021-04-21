@@ -4,10 +4,6 @@ Perform comparisons and choose the network configuration that yields the best re
 """
 import numpy as np
 from keras.callbacks import TensorBoard, ModelCheckpoint
-import os,sys,inspect
-current_dir = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))
-parent_dir = os.path.dirname(current_dir)
-sys.path.insert(0, parent_dir)
 import preprocessing
 from modules.transferlearning import gennet_transfer_learning
 from modules.baseline import gennet_baseline
@@ -240,7 +236,7 @@ def main(param_num=1):
 
 
 if __name__ == '__main__':
-    main(5)
+    main(1)
 
 
 # Test accuracy for hele datasettet:

@@ -34,7 +34,7 @@ def create_dataset(percentage_of_data_set=1., training=True, augmented=False):
     for cat in CATEGORIES:
         onehot = np.array(cats_to_onehots[cat])
         path = os.path.join(data_dir, cat)
-        for i, img in enumerate(tqdm(os.listdir(path))):
+        for i, img in enumerate(tqdm(os.listdir(path), colour='#39ff14')):
             if i > percentage_of_data_set * len(os.listdir(path)):
                 break
             img_array = cv2.imread(os.path.join(path, img))
