@@ -1,8 +1,7 @@
 from keras.models import Sequential
 from keras.layers import Conv2D, MaxPool2D, Flatten, Dense, Dropout
 from keras import optimizers
-from focal_loss import focal_loss
-from keras.callbacks import TensorBoard
+from modules.focal_loss import focal_loss
 
 
 def gennet_baseline(x_shape, use_focal=False):

@@ -4,9 +4,10 @@ Perform comparisons and choose the network configuration that yields the best re
 """
 import numpy as np
 from keras.callbacks import TensorBoard, ModelCheckpoint
-import preprocessing
+from modules import preprocessing
 from modules.transferlearning import gennet_transfer_learning
 from modules.baseline import gennet_baseline
+import matplotlib.pyplot as plt
 
 
 def test_accuracy(model, test_x, test_y):
@@ -24,6 +25,56 @@ def test_accuracy(model, test_x, test_y):
         if diff == 0:
             sum += 1
     return sum/len(predictions)
+
+
+def show_classification_examples(name):
+    """
+    For visualizing examples where the model classifies each correctly (3),
+    and then visualize one example of a false positive and a false negative (2)
+    :param name: name of model to visualize for
+    :return: None, but visualizes 5 examples (4 if model has 0 false pos)
+    """
+    model = gennet_baseline(x_shape=(100, 100, 3), use_focal=False)
+    model.load_weights(f"./models/{name}.hdf5")
+    #preprocessing.create_dataset(percentage_of_data_set=1, training=False)
+    test_x, test_y = preprocessing.load_dataset(train=False)
+
+    predictions = model.predict(test_x)
+
+    categories = ["COVID19", "NORMAL", "PNEUMONIA"]
+    seen = set()
+    examples = {}
+    fn = False
+    fp = False
+    for i, p in enumerate(predictions):
+        correct_idx = np.argmax(test_y[i])
+        if np.argmax(p) == correct_idx:
+            # Then we have a correct classificiation
+            if correct_idx not in seen:  # Then we have not seen a correct classification of this type yet
+                label = categories[correct_idx]
+                examples[f"Predicted: {label}\nActual: {label}"] = test_x[i]  # add img
+                seen.add(correct_idx)
+        else:
+            # We have a failed classification (only gather one fp and one fn)
+            if correct_idx == 0 and not fn:
+                predlabel = categories[np.argmax(p)]
+                truelabel = categories[correct_idx]
+                examples[f"Predicted: {predlabel}\nActual: {truelabel}"] = test_x[i]  # add img
+                fn = True
+            elif np.argmax(p) == 0 and not fp:
+                predlabel = categories[np.argmax(p)]
+                truelabel = categories[correct_idx]
+                examples[f"Predicted: {predlabel}\nActual: {truelabel}"] = test_x[i]  # add img
+                fp = True
+        if len(examples) == 5:
+            # We have all the examples we want
+            break
+    #print(examples.keys())
+    fig, ax = plt.subplots(1, 5, figsize=(16, 6))
+    for i, (header, image) in enumerate(examples.items()):
+        ax[i].set_title(header)
+        ax[i].imshow(image)
+    plt.show()
 
 def test_false_P_N(model, test_x, test_y):
     """
@@ -111,7 +162,7 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     """
 
     # Create tensorboard callback for visualisations of training process
-    tensorboard_callback = TensorBoard(log_dir=f"./logs_{name}")
+    tensorboard_callback = TensorBoard(log_dir=f"./logs/logs_{name}")
 
     # Create checkpointer to save best model at each epoch, making sure we capture the best before overfitting occurs
     checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
@@ -129,10 +180,8 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     result += f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%\n"
     result += f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%"
     print(result)
-    with open(f"./results/{name}",'w+') as f:
+    with open(f"./results/{name}", 'w+') as f:
         f.write(result)
-
-    print(result)
 
 
 
@@ -149,7 +198,7 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
     """
 
     # Create tensorboard callback for visualisations of training process
-    tensorboard_callback = TensorBoard(log_dir=f"./logs_{name}")
+    tensorboard_callback = TensorBoard(log_dir=f"./logs/logs_{name}")
 
     # Create checkpointer to save best model at each epoch, making sure we capture the best before overfitting occurs
     checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
@@ -173,7 +222,7 @@ def train_test_model_data_augmentation(name, model, train_datagen, val_datagen, 
     result += f"(COVID) False positive rate on test set for model on augmented data was: {fpr*100}%\n"
     result += f"(COVID) False negative rate on test set for model on augmented data was: {fnr*100}%"
     print(result)
-    with open(f"./results/{name}",'w+') as f:
+    with open(f"./results/{name}", 'w+') as f:
         f.write(result)
 
 
@@ -238,12 +287,6 @@ def main(param_num=1):
 
 
 if __name__ == '__main__':
-    main(6)
+    main(1)
 
 
-# Test accuracy for hele datasettet:
-# 0.826 for focal med gamma = 2
-# 0.821 for crossentropy
-# 0.821 for focal loss med gamma = 1
-# 0.814 for focal loss med gamma = 3
-# 0.854 for baseline med data augmentation

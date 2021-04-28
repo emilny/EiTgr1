@@ -2,7 +2,7 @@ from keras import optimizers
 from keras.applications import vgg16
 from keras.layers import Flatten, Dense
 from keras.models import Model
-from focal_loss import focal_loss
+from modules.focal_loss import focal_loss
 
 
 def gennet_transfer_learning(x_shape, use_focal=False):
@@ -19,7 +19,6 @@ def gennet_transfer_learning(x_shape, use_focal=False):
 
     # Set pretrained layers to non-trainable
     for layer in pre_trained.layers:
-        # TODO sjekk ut om siste kanskje ikke trengs å skrus av?
         layer.trainable = False
 
     # Add new classifier layers, specific to the task
