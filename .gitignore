@@ -1,5 +1,5 @@
 /Data/*
-.idea
+*.idea
 /data_np/*
 
 # Too large model to push
