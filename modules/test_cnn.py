@@ -8,6 +8,9 @@ from modules import preprocessing
 from modules.transferlearning import gennet_transfer_learning
 from modules.baseline import gennet_baseline
 import matplotlib.pyplot as plt
+from sklearn.metrics import confusion_matrix
+import modules.confusion_matrix_old as cfm_plt
+
 
 
 def test_accuracy(model, test_x, test_y):
@@ -26,6 +29,40 @@ def test_accuracy(model, test_x, test_y):
             sum += 1
     return sum/len(predictions)
 
+def check_model_confusion_matrix(name):
+    """
+    Calculates the confusion matrix for a given model name
+    :param name: which weights to load into the model
+    :return:
+    """
+    x_shape = (100, 100, 3)
+    parts = name.split("_")
+    baseline = parts[0] == "baseline"
+    augment, focal = False, False
+    if len(parts) == 3:
+        augment, focal = True, True
+    elif len(parts) == 2:
+        augment, focal = (True, False) if parts[-1] == "augment" else (False, True)
+
+
+    model_gen = gennet_baseline if baseline else gennet_transfer_learning  # Decide model getter
+    model = model_gen(x_shape=x_shape, use_focal=focal)  # Obtain compiled untrained model
+    model.load_weights(f"./models/best_{name}.hdf5")
+    #preprocessing.create_dataset(percentage_of_data_set=1, training=False)
+
+    test_x, test_y = preprocessing.load_dataset(train=False)
+    preds = model.predict(test_x)
+    y_true = np.argmax(test_y, axis=1)
+    y_pred = np.argmax(preds, axis=1)
+
+
+    cm = confusion_matrix(y_true, y_pred)
+    categories = ["COVID19", "NORMAL", "PNEUMONIA"]
+    cfm_plt.plot_confusion_matrix(cm, categories, normalize=False)
+    cfm_plt.plot_confusion_matrix(cm, categories, normalize=True)
+
+
+
 
 def show_classification_examples(name):
     """
@@ -34,8 +71,9 @@ def show_classification_examples(name):
     :param name: name of model to visualize for
     :return: None, but visualizes 5 examples (4 if model has 0 false pos)
     """
+
     model = gennet_baseline(x_shape=(100, 100, 3), use_focal=False)
-    model.load_weights(f"./models/{name}.hdf5")
+    model.load_weights(f"./models/best_{name}.hdf5")
     #preprocessing.create_dataset(percentage_of_data_set=1, training=False)
     test_x, test_y = preprocessing.load_dataset(train=False)
 
@@ -287,6 +325,6 @@ def main(param_num=1):
 
 
 if __name__ == '__main__':
-    main(1)
-
+    main(7)
+    #check_model_confusion_matrix("baseline_augment")
 
