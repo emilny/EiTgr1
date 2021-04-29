@@ -11,7 +11,7 @@ def plot_confusion_matrix(cm, classes,
     Normalization can be applied by setting `normalize=True`.
     """
     if normalize:
-        cm = np.round(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], 2)
+        cm = np.round(cm.astype('float') / cm.sum(axis=1)[:, np.newaxis], 3)
         print("Normalized confusion matrix")
     else:
         print('Confusion matrix, without normalization')

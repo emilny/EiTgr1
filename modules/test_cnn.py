@@ -38,6 +38,7 @@ def check_model_confusion_matrix(name):
     x_shape = (100, 100, 3)
     parts = name.split("_")
     baseline = parts[0] == "baseline"
+    parts = parts if baseline else parts[1:]  # 'Transfer_learning' becomes two elements when split on '_'
     augment, focal = False, False
     if len(parts) == 3:
         augment, focal = True, True
@@ -206,7 +207,7 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using ordinary fit
-    model.fit(x=X_train, y=Y_train, batch_size=30, epochs=epochs, validation_split=validation_split,
+    model.fit(x=X_train, y=Y_train, batch_size=100, epochs=epochs, validation_split=validation_split,
               callbacks=[tensorboard_callback, checkpointer])
 
     model.load_weights(f"./models/best_{name}.hdf5")
@@ -285,7 +286,7 @@ RUN_PARAM_DICT = {1: {"name": "baseline",
                   6: {"name": "transfer_learning_augment",
                       "use_focal": False,
                       "augment_data": True},
-                  7: {"name": "transfer_learning_focal",
+                  7: {"name": "transfer_learning_focal2",
                       "use_focal": True,
                       "augment_data": False},
                   8: {"name": "transfer_learning_augment_focal",
@@ -316,7 +317,7 @@ def main(param_num=1):
     model = model_gen(x_shape=x_shape, use_focal=use_focal)  # Obtain compiled untrained model
 
     data_getter = get_generators if augment else get_data  # Decide data getter
-    x_train, y_train, x_test, y_test = data_getter(percentage=1)  # Obtain 100% of data
+    x_train, y_train, x_test, y_test = data_getter(percentage=None)  # Obtain 100% of data
 
     run_ = train_test_model_data_augmentation if augment else train_test_model  # Decide run function
 
@@ -325,6 +326,6 @@ def main(param_num=1):
 
 
 if __name__ == '__main__':
-    main(7)
-    #check_model_confusion_matrix("baseline_augment")
+    #main(7)
+    check_model_confusion_matrix("transfer_learning_focal2")
 
