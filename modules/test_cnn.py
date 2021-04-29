@@ -207,7 +207,7 @@ def train_test_model(name, model, X_train, Y_train, X_test, Y_test, validation_s
     checkpointer = ModelCheckpoint(filepath=f"./models/best_{name}.hdf5", save_best_only=True)
 
     # Train model using ordinary fit
-    model.fit(x=X_train, y=Y_train, batch_size=100, epochs=epochs, validation_split=validation_split,
+    model.fit(x=X_train, y=Y_train, batch_size=30, epochs=epochs, validation_split=validation_split,
               callbacks=[tensorboard_callback, checkpointer])
 
     model.load_weights(f"./models/best_{name}.hdf5")
